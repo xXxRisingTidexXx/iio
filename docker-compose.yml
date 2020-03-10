@@ -1,11 +1,11 @@
 version: '3.7'
 
 services:
-  backend:
+  core:
     container_name: backend
     build:
       context: .
-      dockerfile: docker/backend.dockerfile
+      dockerfile: docker/core.dockerfile
     restart: unless-stopped
     ports:
       - 8080:8080
