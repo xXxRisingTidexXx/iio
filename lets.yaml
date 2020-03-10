@@ -1,0 +1,8 @@
+shell: bash
+commands:
+  run:
+    description: Compiles the whole project and runs it
+    cmd: |
+      docker-compose build core
+      docker-compose up core
+      docker-compose down
