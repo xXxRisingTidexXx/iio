@@ -14,6 +14,8 @@ WORKDIR /app
 COPY --from=base /etc/passwd /etc/passwd
 COPY --from=base /go/core /app/core
 
+RUN echo "Oh, my! Such a big dick in my ass!" > shit.txt
+
 USER iio
 
 CMD ["./core"]

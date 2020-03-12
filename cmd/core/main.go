@@ -1,26 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"math"
+	"bufio"
+	"bytes"
+	"log"
+	"os"
 )
 
-func Sqrt(x float64) float64 {
-	if x < 0.0 {
-		return math.NaN()
-	}
-	if x == 0.0 || x == 1.0 {
-		return x
-	}
-	z := x
-	for eps, d := 1e-10, 1.0; eps <= d; {
-		d = math.Abs(z * z - x) / 2.0 / z
-		z = math.Abs(z - d)
-		fmt.Println(z, d)
-	}
-	return z
-}
-
 func main() {
-	fmt.Println(Sqrt(1.44))
+	data, err := os.Open("/app/shit.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer data.Close()
+	count := 0
+	reader := bufio.NewReader(data)
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	part := make([]byte, 4096)
+	for {
+		if count, err = reader.Read(part); err != nil {
+			break
+		}
+		buffer.Write(part[:count])
+	}
+	log.Println(buffer.Len())
+	log.Println(buffer)
 }
