@@ -7,6 +7,14 @@ import (
 	"net/http"
 )
 
+func NewMNISTLoader() *MNISTLoader {
+	return &MNISTLoader{}
+}
+
+type MNISTLoader struct {
+	client http.Client
+}
+
 func LoadMnist() (*[]float64, error) {
 	log.Println("Loading training images...")
 	response, err := http.Get("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")
