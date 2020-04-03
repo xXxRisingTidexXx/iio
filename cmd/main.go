@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	bytes, err := loading.LoadMnist()
+	bytes, err := loading.LoadMNIST()
 	if err != nil {
 		log.Println(err)
 	} else {
