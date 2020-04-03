@@ -11,10 +11,14 @@ import (
 )
 
 func LoadMNIST() (*[]float64, error) {
-	idx, _ := getAndDecompressIDX("t10k-labels-idx1-ubyte")
+	idx, _ := getAndDecompressIDX("t10k-images-idx3-ubyte")
+	images, _ := parseImages(idx)
+	idx, _ = getAndDecompressIDX("t10k-labels-idx1-ubyte")
 	labels, _ := parseLabels(idx)
-	log.Println(labels)
+	log.Println(len(images))
+	log.Println(images[0])
 	log.Println(len(labels))
+	log.Println(labels[0])
 	return &[]float64{}, nil
 }
 
@@ -42,57 +46,50 @@ func getAndDecompressIDX(filename string) ([]byte, error) {
 }
 
 func parseImages(idx []byte) ([]vectors.Vector, error) {
-	if len(idx) < 16 {
-		return nil, fmt.Errorf("invalid idx: should contain at least 16 bytes but got %d", len(idx))
+	pixels, size, err := checkIDX(idx, 3)
+	if err != nil {
+		return nil, err
 	}
-	if idx[0] != 0 || idx[1] != 0 {
-		return nil, fmt.Errorf("invalid idx: first 2 bytes should be 0 but got %d & %d", idx[0], idx[1])
-	}
-	if idx[2] != 8 {
-		return nil, fmt.Errorf("invalid idx: 3rd byte should be 8 but got %d", idx[2])
-	}
-	if idx[3] != 3 {
-		return nil, fmt.Errorf("invalid idx: 4th byte should be 3 but got %d", idx[2])
-	}
-	pixels := idx[16:]
-	size := binary.BigEndian.Uint64(idx[4:8])
-	rows := binary.BigEndian.Uint64(idx[8:12])
-	columns := binary.BigEndian.Uint64(idx[8:12])
-	if size*rows*columns != uint64(len(pixels)) {
-		return nil,
-			fmt.Errorf(
-				"invalid idx: different lengths %d x %d x %d and %d", size, rows, columns, len(pixels),
-			)
-	}
-	images := make([]vectors.Vector, size)
-	for i := uint64(0); i < size; i++ {
-		items := make([]float64, rows*columns)
-		for j := uint64(0); j < rows; j++ {
-			for k := uint64(0); k < columns; k++ {
-				items[j * rows + k] = float64(pixels[i * size + j * rows + k]) / 255.0
-			}
+	images, length := make([]vectors.Vector, size), len(pixels) / size
+	for i := 0; i < size; i += length {
+		activations := make([]float64, length)
+		for j := 0; j < length; j++ {
+			activations[j] = float64(pixels[i + j]) / 255.0
 		}
-		images[i] = vectors.Vectorize(items)
+		images[i] = vectors.Vectorize(activations)
 	}
 	return images, nil
 }
 
-func parseLabels(idx []byte) ([]byte, error) {
-	if len(idx) < 8 {
-		return nil, fmt.Errorf("invalid idx: should contain at least 8 bytes but got %d", len(idx))
+func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
+	minLength := 4 * (dimensions + 1)
+	if len(idx) < minLength {
+		return nil, 0, fmt.Errorf("invalid idx: too short - %d bytes, expected %d", len(idx), minLength)
 	}
 	if idx[0] != 0 || idx[1] != 0 {
-		return nil, fmt.Errorf("invalid idx: first 2 bytes should be 0 but got %d & %d", idx[0], idx[1])
+		return nil, 0, fmt.Errorf("invalid idx: first 2 bytes should be 0 but got %d & %d", idx[0], idx[1])
 	}
 	if idx[2] != 8 {
-		return nil, fmt.Errorf("invalid idx: 3rd byte should be 8 but got %d", idx[2])
+		return nil, 0, fmt.Errorf("invalid idx: 3rd byte should be 8 but got %d", idx[2])
 	}
-	if idx[3] != 1 {
-		return nil, fmt.Errorf("invalid idx: 4th byte should be 1 but got %d", idx[2])
+	if idx[3] != byte(dimensions) {
+		return nil, 0, fmt.Errorf("invalid idx: 4th byte should be %d but got %d", dimensions, idx[2])
 	}
-	labels := idx[8:]
-	if size := binary.BigEndian.Uint32(idx[4:8]); size != uint32(len(labels)) {
-		return nil, fmt.Errorf("invalid idx: different lengths %d and %d", size, len(labels))
+	data, size := idx[minLength:], int(binary.BigEndian.Uint32(idx[4:8]))
+	total := size
+	for i := 2; i <= dimensions; i++ {
+		total *= int(binary.BigEndian.Uint32(idx[i * 4: (i + 1) * 4]))
+	}
+	if length := len(data); total != length {
+		return nil, 0, fmt.Errorf("invalid idx: different lengths %d and %d", total, length)
+	}
+	return data, size, nil
+}
+
+func parseLabels(idx []byte) ([]byte, error) {
+	labels, _, err := checkIDX(idx, 1)
+	if err != nil {
+		return nil, err
 	}
 	for i, label := range labels {
 		if label > 9 {
