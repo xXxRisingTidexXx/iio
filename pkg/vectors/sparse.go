@@ -1,5 +1,7 @@
 package vectors
 
+import "fmt"
+
 type SparseVector struct {
 	items  map[uint64]float64
 	length uint64
@@ -26,5 +28,5 @@ func (vector *SparseVector) TimesBy(float64) Vector {
 }
 
 func (vector *SparseVector) String() string {
-	panic("implement me")
+	return fmt.Sprintf("(%d,)\n%v\n", vector.length, vector.items)
 }
