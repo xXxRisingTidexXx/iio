@@ -1,17 +1,19 @@
 package loading
 
-import "fmt"
+import (
+	"fmt"
+	"iio/pkg/vectors"
+)
 
 type Example struct {
-	Image *[]float64
+	Image vectors.Vector
 	Label byte
 }
 
 func (example *Example) String() string {
-	image := *example.Image
-	length := len(image)
+	length := example.Image.Length()
 	if length <= 10 {
-		return fmt.Sprintf("%v - (%d), %d", image, length, example.Label)
+		return fmt.Sprintf("%v , (%d,) - %d", image, length, example.Label)
 	}
 	return fmt.Sprintf(
 		"[%.4f %.4f %.4f ... %.4f %.4f %.4f] - (%d), %d",
