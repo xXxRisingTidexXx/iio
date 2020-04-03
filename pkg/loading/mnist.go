@@ -15,9 +15,7 @@ func LoadMNIST() (*[]float64, error) {
 	images, _ := parseImages(idx)
 	idx, _ = getAndDecompressIDX("t10k-labels-idx1-ubyte")
 	labels, _ := parseLabels(idx)
-	log.Println(len(images))
 	log.Println(images[0])
-	log.Println(len(labels))
 	log.Println(labels[0])
 	return &[]float64{}, nil
 }
@@ -50,13 +48,13 @@ func parseImages(idx []byte) ([]vectors.Vector, error) {
 	if err != nil {
 		return nil, err
 	}
-	images, length := make([]vectors.Vector, size), len(pixels) / size
+	images, length := make([]vectors.Vector, size), len(pixels)/size
 	for i := 0; i < size; i += length {
-		activations := make([]float64, length)
+		items := make([]float64, length)
 		for j := 0; j < length; j++ {
-			activations[j] = float64(pixels[i + j]) / 255.0
+			items[j] = float64(pixels[i+j]) / 255.0
 		}
-		images[i] = vectors.Vectorize(activations)
+		images[i] = vectors.Vectorize(items)
 	}
 	return images, nil
 }
@@ -78,7 +76,7 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 	data, size := idx[minLength:], int(binary.BigEndian.Uint32(idx[4:8]))
 	total := size
 	for i := 2; i <= dimensions; i++ {
-		total *= int(binary.BigEndian.Uint32(idx[i * 4: (i + 1) * 4]))
+		total *= int(binary.BigEndian.Uint32(idx[i*4 : (i+1)*4]))
 	}
 	if length := len(data); total != length {
 		return nil, 0, fmt.Errorf("invalid idx: different lengths %d and %d", total, length)
