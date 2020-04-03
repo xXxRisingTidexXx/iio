@@ -1,6 +1,9 @@
 package vectors
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type SparseVector struct {
 	items  map[int]float64
@@ -34,5 +37,21 @@ func (vector *SparseVector) TimesBy(float64) Vector {
 }
 
 func (vector *SparseVector) String() string {
-	return fmt.Sprintf("(%d,)\n%v\n", vector.length, vector.items)
+	builder := strings.Builder{}
+	builder.WriteString("[ ")
+	if vector.length <= 10 {
+		for i := 0; i < vector.length; i++ {
+			builder.WriteString(fmt.Sprintf("%.3f ", vector.Get(i)))
+		}
+	} else {
+		for i := 0; i < 3; i++ {
+			builder.WriteString(fmt.Sprintf("%.3f ", vector.Get(i)))
+		}
+		builder.WriteString("... ")
+		for i := vector.length - 3; i < vector.length; i++ {
+			builder.WriteString(fmt.Sprintf("%.3f ", vector.Get(i)))
+		}
+	}
+	builder.WriteString("]")
+	return builder.String()
 }

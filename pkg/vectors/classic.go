@@ -8,8 +8,8 @@ func (vector *ClassicVector) Length() int {
 	return len(vector.items)
 }
 
-func (vector *ClassicVector) Get(int) float64 {
-	panic("implement me")
+func (vector *ClassicVector) Get(i int) float64 {
+	return vector.items[i]
 }
 
 func (vector *ClassicVector) Plus(Vector) Vector {
