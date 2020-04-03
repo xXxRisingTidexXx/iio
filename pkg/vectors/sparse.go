@@ -3,16 +3,22 @@ package vectors
 import "fmt"
 
 type SparseVector struct {
-	items  map[uint64]float64
-	length uint64
+	items  map[int]float64
+	length int
 }
 
-func (vector *SparseVector) Length() uint64 {
+func (vector *SparseVector) Length() int {
 	return vector.length
 }
 
-func (vector *SparseVector) Get(uint64) float64 {
-	panic("implement me")
+func (vector *SparseVector) Get(i int) float64 {
+	if i < 0 || i >= vector.length {
+		panic(fmt.Sprintf("out of bounds: length %d, index %d", vector.length, i))
+	}
+	if item, ok := vector.items[i]; ok {
+		return item
+	}
+	return 0.0
 }
 
 func (vector *SparseVector) Plus(Vector) Vector {

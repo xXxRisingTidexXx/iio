@@ -4,11 +4,11 @@ type ClassicVector struct {
 	items []float64
 }
 
-func (vector *ClassicVector) Length() uint64 {
-	return uint64(len(vector.items))
+func (vector *ClassicVector) Length() int {
+	return len(vector.items)
 }
 
-func (vector *ClassicVector) Get(uint64) float64 {
+func (vector *ClassicVector) Get(int) float64 {
 	panic("implement me")
 }
 
