@@ -9,7 +9,12 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
+
+func NewMNISTLoader() Loader {
+	return &MNISTLoader{&http.Client{Timeout: 5 * time.Second}, &sync.WaitGroup{}}
+}
 
 // Downloads the whole MNIST database images with a single batch.
 // The homepage of the DB is http://yann.lecun.com/exdb/mnist/ .
@@ -19,19 +24,23 @@ import (
 // and test sets should equal 44.9 mib, 57 kib, 7.5 mib and 10 kib
 // respectively. All files are represented by IDX format which is
 // very suitable for ND-array transfer.
-func LoadMNIST() ([]*Example, []*Example, error) {
-	waitGroup := sync.WaitGroup{}
+type MNISTLoader struct {
+	client    *http.Client
+	waitGroup *sync.WaitGroup
+}
+
+func (loader *MNISTLoader) Load() ([]*Example, []*Example, error) {
 	trainingImageChannel := make(chan []vectors.Vector, 1)
 	trainingLabelChannel := make(chan []byte, 1)
 	testImageChannel := make(chan []vectors.Vector, 1)
 	testLabelChannel := make(chan []byte, 1)
 	errChannel := make(chan error, 4)
-	waitGroup.Add(4)
-	go loadImages("train-images-idx3-ubyte", &waitGroup, trainingImageChannel, errChannel)
-	go loadLabels("train-labels-idx1-ubyte", &waitGroup, trainingLabelChannel, errChannel)
-	go loadImages("t10k-images-idx3-ubyte", &waitGroup, testImageChannel, errChannel)
-	go loadLabels("t10k-labels-idx1-ubyte", &waitGroup, testLabelChannel, errChannel)
-	waitGroup.Wait()
+	loader.waitGroup.Add(4)
+	go loader.loadImages("train-images-idx3-ubyte", trainingImageChannel, errChannel)
+	go loader.loadLabels("train-labels-idx1-ubyte", trainingLabelChannel, errChannel)
+	go loader.loadImages("t10k-images-idx3-ubyte", testImageChannel, errChannel)
+	go loader.loadLabels("t10k-labels-idx1-ubyte", testLabelChannel, errChannel)
+	loader.waitGroup.Wait()
 	select {
 	case err := <-errChannel:
 		return nil, nil, err
@@ -50,14 +59,13 @@ func LoadMNIST() ([]*Example, []*Example, error) {
 
 // Downloads and parses the specified IDX file with the image set
 // content. Any error at any stage causes immediate termination.
-func loadImages(
+func (loader *MNISTLoader) loadImages(
 	filename string,
-	waitGroup *sync.WaitGroup,
 	imageChannel chan<- []vectors.Vector,
 	errChannel chan<- error,
 ) {
-	defer waitGroup.Done()
-	idx, err := getAndDecompressIDX(filename)
+	defer loader.waitGroup.Done()
+	idx, err := loader.getAndDecompressIDX(filename)
 	if err != nil {
 		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
 		return
@@ -71,9 +79,9 @@ func loadImages(
 }
 
 // Fetches the target archive and unpacks it straight to the memory.
-func getAndDecompressIDX(filename string) ([]byte, error) {
+func (loader *MNISTLoader) getAndDecompressIDX(filename string) ([]byte, error) {
 	log.Printf("Loading %s\n", filename)
-	response, err := http.Get(fmt.Sprintf("http://yann.lecun.com/exdb/mnist/%s.gz", filename))
+	response, err := loader.client.Get(fmt.Sprintf("http://yann.lecun.com/exdb/mnist/%s.gz", filename))
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +100,27 @@ func getAndDecompressIDX(filename string) ([]byte, error) {
 	}
 	log.Printf("Downloaded %s: %.3f mib\n", filename, float64(len(idx))/(1<<20))
 	return idx, nil
+}
+
+// Downloads and parses the specified IDX file with the label set
+// content. Any error at any stage causes immediate termination.
+func (loader *MNISTLoader) loadLabels(
+	filename string,
+	labelChannel chan<- []byte,
+	errChannel chan<- error,
+) {
+	defer loader.waitGroup.Done()
+	idx, err := loader.getAndDecompressIDX(filename)
+	if err != nil {
+		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
+		return
+	}
+	labels, err := parseLabels(idx)
+	if err != nil {
+		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
+		return
+	}
+	labelChannel <- labels
 }
 
 // Accepts a set of bytes in IDX format to transform them into
@@ -148,28 +177,6 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 		return nil, 0, fmt.Errorf("invalid idx: different lengths %d and %d", total, length)
 	}
 	return data, size, nil
-}
-
-// Downloads and parses the specified IDX file with the label set
-// content. Any error at any stage causes immediate termination.
-func loadLabels(
-	filename string,
-	waitGroup *sync.WaitGroup,
-	labelChannel chan<- []byte,
-	errChannel chan<- error,
-) {
-	defer waitGroup.Done()
-	idx, err := getAndDecompressIDX(filename)
-	if err != nil {
-		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
-		return
-	}
-	labels, err := parseLabels(idx)
-	if err != nil {
-		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
-		return
-	}
-	labelChannel <- labels
 }
 
 // Processes an image label IDX slice. Here should be followed

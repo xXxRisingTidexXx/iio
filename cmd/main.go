@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	trainingExamples, testExamples, err := loading.LoadMNIST()
+	loader := loading.NewMNISTLoader()
+	trainingExamples, testExamples, err := loader.Load()
 	if err != nil {
 		log.Println(err)
 	} else {
