@@ -8,45 +8,56 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 )
 
-func LoadMNIST() {
+func LoadMNIST() ([]*Example, []*Example, error) {
+	waitGroup := sync.WaitGroup{}
 	trainingImageChannel := make(chan []vectors.Vector, 1)
 	trainingLabelChannel := make(chan []byte, 1)
 	testImageChannel := make(chan []vectors.Vector, 1)
 	testLabelChannel := make(chan []byte, 1)
 	errChannel := make(chan error, 4)
-	go loadImages("train-images-idx3-ubyte", trainingImageChannel, errChannel)
-	go loadLabels("train-labels-idx1-ubyte", trainingLabelChannel, errChannel)
-	go loadImages("t10k-images-idx3-ubyte", testImageChannel, errChannel)
-	go loadLabels("t10k-labels-idx1-ubyte", testLabelChannel, errChannel)
-	trainingImages := <-trainingImageChannel
-	trainingLabels := <-trainingLabelChannel
-	testImages := <-testImageChannel
-	testLabels := <-testLabelChannel
-	err := <-errChannel
-	log.Println("training images", len(trainingImages))
-	log.Println("training labels", len(trainingLabels))
-	log.Println("test images", len(testImages))
-	log.Println("test labels", len(testLabels))
-	log.Println(err)
+	waitGroup.Add(4)
+	go loadImages("train-images-idx3-ubyte", &waitGroup, trainingImageChannel, errChannel)
+	go loadLabels("train-labels-idx1-ubyte", &waitGroup, trainingLabelChannel, errChannel)
+	go loadImages("t10k-images-idx3-ubyte", &waitGroup, testImageChannel, errChannel)
+	go loadLabels("t10k-labels-idx1-ubyte", &waitGroup, testLabelChannel, errChannel)
+	waitGroup.Wait()
+	select {
+	case err := <-errChannel:
+		return nil, nil, err
+	default:
+		trainingImages, trainingLabels := <-trainingImageChannel, <-trainingLabelChannel
+		testImages, testLabels := <-testImageChannel, <-testLabelChannel
+		if err := compareLengths(trainingImages, trainingLabels); err != nil {
+			return nil, nil, err
+		}
+		if err := compareLengths(testImages, testLabels); err != nil {
+			return nil, nil, err
+		}
+		return makeExamples(trainingImages, trainingLabels), makeExamples(testImages, testLabels), nil
+	}
 }
 
-func loadImages(filename string, imageChannel chan<- []vectors.Vector, errChannel chan<- error) {
+func loadImages(
+	filename string,
+	waitGroup *sync.WaitGroup,
+	imageChannel chan<- []vectors.Vector,
+	errChannel chan<- error,
+) {
+	defer waitGroup.Done()
 	idx, err := getAndDecompressIDX(filename)
 	if err != nil {
-		close(imageChannel)
-		errChannel <- err
+		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
 		return
 	}
 	images, err := parseImages(idx)
 	if err != nil {
-		close(imageChannel)
-		errChannel <- err
+		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
 		return
 	}
 	imageChannel <- images
-	close(imageChannel)
 }
 
 func getAndDecompressIDX(filename string) ([]byte, error) {
@@ -100,7 +111,7 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 		return nil, 0, fmt.Errorf("invalid idx: 3rd byte should be 8 but got %d", idx[2])
 	}
 	if idx[3] != byte(dimensions) {
-		return nil, 0, fmt.Errorf("invalid idx: 4th byte should be %d but got %d", dimensions, idx[2])
+		return nil, 0, fmt.Errorf("invalid idx: 4th byte should be %d but got %d", dimensions, idx[3])
 	}
 	data, size := idx[minLength:], int(binary.BigEndian.Uint32(idx[4:8]))
 	total := size
@@ -113,21 +124,24 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 	return data, size, nil
 }
 
-func loadLabels(filename string, labelChannel chan<- []byte, errChannel chan<- error) {
+func loadLabels(
+	filename string,
+	waitGroup *sync.WaitGroup,
+	labelChannel chan<- []byte,
+	errChannel chan<- error,
+) {
+	defer waitGroup.Done()
 	idx, err := getAndDecompressIDX(filename)
 	if err != nil {
-		close(labelChannel)
-		errChannel <- err
+		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
 		return
 	}
 	labels, err := parseLabels(idx)
 	if err != nil {
-		close(labelChannel)
-		errChannel <- err
+		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
 		return
 	}
 	labelChannel <- labels
-	close(labelChannel)
 }
 
 func parseLabels(idx []byte) ([]byte, error) {
@@ -141,4 +155,21 @@ func parseLabels(idx []byte) ([]byte, error) {
 		}
 	}
 	return labels, nil
+}
+
+func compareLengths(images []vectors.Vector, labels []byte) error {
+	imagesLength, labelsLength := len(images), len(labels)
+	if imagesLength == labelsLength {
+		return nil
+	}
+	return fmt.Errorf("mnist: sets have different lengths %d & %d", imagesLength, labelsLength)
+}
+
+func makeExamples(images []vectors.Vector, labels []byte) []*Example {
+	length := len(labels)
+	examples := make([]*Example, length)
+	for i := 0; i < length; i++ {
+		examples[i] = &Example{images[i], labels[i]}
+	}
+	return examples
 }
