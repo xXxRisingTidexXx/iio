@@ -25,5 +25,5 @@ func (vector *ClassicVector) TimesBy(float64) Vector {
 }
 
 func (vector *ClassicVector) String() string {
-	panic("implement me")
+	return Shorten(vector)
 }
