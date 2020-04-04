@@ -1,0 +1,20 @@
+shell: bash
+commands:
+  workspace:
+    description: Initialize local devspace
+    cmd: go get -t -u all && go get -u github.com/onsi/ginkgo/ginkgo
+  compile:
+    description: Compiles the whole project and runs it
+    cmd: go build -o bin/iio cmd/main.go
+  run:
+    description: Executes the binary
+    cmd: bin/iio
+  format:
+    description: Prettify the source code
+    cmd: gofmt -w -s .
+  lint:
+    description: Lint the source
+    cmd: golangci-lint run
+  test:
+    description: Run test suites
+    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -nodes 4
