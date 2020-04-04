@@ -10,14 +10,43 @@ import (
 	"net/http"
 )
 
-func LoadMNIST() (*[]float64, error) {
-	idx, _ := getAndDecompressIDX("t10k-images-idx3-ubyte")
-	images, _ := parseImages(idx)
-	idx, _ = getAndDecompressIDX("t10k-labels-idx1-ubyte")
-	labels, _ := parseLabels(idx)
-	log.Println(images[0])
-	log.Println(labels[0])
-	return &[]float64{}, nil
+func LoadMNIST() {
+	trainingImageChannel := make(chan []vectors.Vector, 1)
+	trainingLabelChannel := make(chan []byte, 1)
+	testImageChannel := make(chan []vectors.Vector, 1)
+	testLabelChannel := make(chan []byte, 1)
+	errChannel := make(chan error, 4)
+	go loadImages("train-images-idx3-ubyte", trainingImageChannel, errChannel)
+	go loadLabels("train-labels-idx1-ubyte", trainingLabelChannel, errChannel)
+	go loadImages("t10k-images-idx3-ubyte", testImageChannel, errChannel)
+	go loadLabels("t10k-labels-idx1-ubyte", testLabelChannel, errChannel)
+	trainingImages := <-trainingImageChannel
+	trainingLabels := <-trainingLabelChannel
+	testImages := <-testImageChannel
+	testLabels := <-testLabelChannel
+	err := <-errChannel
+	log.Println("training images", len(trainingImages))
+	log.Println("training labels", len(trainingLabels))
+	log.Println("test images", len(testImages))
+	log.Println("test labels", len(testLabels))
+	log.Println(err)
+}
+
+func loadImages(filename string, imageChannel chan<- []vectors.Vector, errChannel chan<- error) {
+	idx, err := getAndDecompressIDX(filename)
+	if err != nil {
+		close(imageChannel)
+		errChannel <- err
+		return
+	}
+	images, err := parseImages(idx)
+	if err != nil {
+		close(imageChannel)
+		errChannel <- err
+		return
+	}
+	imageChannel <- images
+	close(imageChannel)
 }
 
 func getAndDecompressIDX(filename string) ([]byte, error) {
@@ -39,7 +68,7 @@ func getAndDecompressIDX(filename string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Loading of %s completed: %d\n", filename, len(idx))
+	log.Printf("Downloaded %s: %.3f mib\n", filename, float64(len(idx))/(1<<20))
 	return idx, nil
 }
 
@@ -82,6 +111,23 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 		return nil, 0, fmt.Errorf("invalid idx: different lengths %d and %d", total, length)
 	}
 	return data, size, nil
+}
+
+func loadLabels(filename string, labelChannel chan<- []byte, errChannel chan<- error) {
+	idx, err := getAndDecompressIDX(filename)
+	if err != nil {
+		close(labelChannel)
+		errChannel <- err
+		return
+	}
+	labels, err := parseLabels(idx)
+	if err != nil {
+		close(labelChannel)
+		errChannel <- err
+		return
+	}
+	labelChannel <- labels
+	close(labelChannel)
 }
 
 func parseLabels(idx []byte) ([]byte, error) {
