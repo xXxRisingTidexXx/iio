@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+// Optimized linear data structure holding a map of non-zero
+// float64 values. The main benefit lies in the general vector
+// size: arrays with many (roughly less than a half) zero cells
+// can be tighten, then the general memory usage can be
+// decreased. Probably, this vector would be less useful in the
+// case of dense data (in that way use vector.ClassicVector ).
 type SparseVector struct {
 	items  map[int]float64
 	length int

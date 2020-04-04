@@ -11,6 +11,14 @@ import (
 	"sync"
 )
 
+// Downloads the whole MNIST database images with a single batch.
+// The homepage of the DB is http://yann.lecun.com/exdb/mnist/ .
+// 4 concurrent requests should fetch .gz archives, decompress them
+// and convert into numerical data structures. Actually, on the
+// 14 April 2020, sizes of the image and label files of the training
+// and test sets should equal 44.9 mib, 57 kib, 7.5 mib and 10 kib
+// respectively. All files are represented by IDX format which is
+// very suitable for ND-array transfer.
 func LoadMNIST() ([]*Example, []*Example, error) {
 	waitGroup := sync.WaitGroup{}
 	trainingImageChannel := make(chan []vectors.Vector, 1)
@@ -40,6 +48,8 @@ func LoadMNIST() ([]*Example, []*Example, error) {
 	}
 }
 
+// Downloads and parses the specified IDX file with the image set
+// content. Any error at any stage causes immediate termination.
 func loadImages(
 	filename string,
 	waitGroup *sync.WaitGroup,
@@ -60,6 +70,7 @@ func loadImages(
 	imageChannel <- images
 }
 
+// Fetches the target archive and unpacks it straight to the memory.
 func getAndDecompressIDX(filename string) ([]byte, error) {
 	log.Printf("Loading %s\n", filename)
 	response, err := http.Get(fmt.Sprintf("http://yann.lecun.com/exdb/mnist/%s.gz", filename))
@@ -83,6 +94,17 @@ func getAndDecompressIDX(filename string) ([]byte, error) {
 	return idx, nil
 }
 
+// Accepts a set of bytes in IDX format to transform them into
+// more "mathematical" data structure - vector.Vector . The
+// specification of MNIST declares images in the form of the 3D
+// tensor (60000 images x 28 pixels width x 28 pixels height),
+// where each item is an int [0; 255]; the higher num, the lighter
+// pixel. Their general amount yields the contour of the regular
+// cipher. Here each image is converted from the "2D view" into
+// 1D array where each element is in range [0; 1] - all pictures
+// are flattened and divided by 255 to obtain activation vector
+// for further computations. All images are read in C-style - i.e.
+// row-by-row or row-wise.
 func parseImages(idx []byte) ([]vectors.Vector, error) {
 	pixels, size, err := checkIDX(idx, 3)
 	if err != nil {
@@ -99,6 +121,10 @@ func parseImages(idx []byte) ([]vectors.Vector, error) {
 	return images, nil
 }
 
+// Validates the structure of an IDX byte array. Basically, the
+// most significant requirements are appropriate content length,
+// content identifier and overall ND-array shape. All the data
+// can be taken from a few leading 32-bit integer magic numbers.
 func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 	minLength := 4 * (dimensions + 1)
 	if len(idx) < minLength {
@@ -124,6 +150,8 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 	return data, size, nil
 }
 
+// Downloads and parses the specified IDX file with the label set
+// content. Any error at any stage causes immediate termination.
 func loadLabels(
 	filename string,
 	waitGroup *sync.WaitGroup,
@@ -144,6 +172,9 @@ func loadLabels(
 	labelChannel <- labels
 }
 
+// Processes an image label IDX slice. Here should be followed
+// all the requirements of IDX format plus all the labels should
+// be one-digit unsigned integers.
 func parseLabels(idx []byte) ([]byte, error) {
 	labels, _, err := checkIDX(idx, 1)
 	if err != nil {
@@ -157,6 +188,8 @@ func parseLabels(idx []byte) ([]byte, error) {
 	return labels, nil
 }
 
+// Checks the lengths of image and label arrays - they must
+// be equal to avoid an inconsistency.
 func compareLengths(images []vectors.Vector, labels []byte) error {
 	imagesLength, labelsLength := len(images), len(labels)
 	if imagesLength == labelsLength {
@@ -165,6 +198,8 @@ func compareLengths(images []vectors.Vector, labels []byte) error {
 	return fmt.Errorf("mnist: sets have different lengths %d & %d", imagesLength, labelsLength)
 }
 
+// Produces example array - a set of labeled images suitable for
+// a network processing.
 func makeExamples(images []vectors.Vector, labels []byte) []*Example {
 	length := len(labels)
 	examples := make([]*Example, length)

@@ -1,5 +1,6 @@
 package vectors
 
+// Standard slice-based vector implementation.
 type ClassicVector struct {
 	items []float64
 }

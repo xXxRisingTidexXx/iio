@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// A simple and elegant method to stringify a numeric array.
+// Too long parts are cut and replaced by three dots.
 func Shorten(vector Vector) string {
 	builder := strings.Builder{}
 	builder.WriteString("[ ")
