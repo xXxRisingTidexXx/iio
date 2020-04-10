@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"encoding/binary"
 	"fmt"
+	"iio/pkg/networks"
 	"iio/pkg/vectors"
 	"io/ioutil"
 	"log"
@@ -29,7 +30,7 @@ type MNISTLoader struct {
 	waitGroup *sync.WaitGroup
 }
 
-func (loader *MNISTLoader) Load() ([]*Example, []*Example, error) {
+func (loader *MNISTLoader) Load() ([]*networks.Sample, []*networks.Sample, error) {
 	trainingImageChannel := make(chan []vectors.Vector, 1)
 	trainingLabelChannel := make(chan []byte, 1)
 	testImageChannel := make(chan []vectors.Vector, 1)
@@ -53,7 +54,7 @@ func (loader *MNISTLoader) Load() ([]*Example, []*Example, error) {
 		if err := compareLengths(testImages, testLabels); err != nil {
 			return nil, nil, err
 		}
-		return makeExamples(trainingImages, trainingLabels), makeExamples(testImages, testLabels), nil
+		return makeSamples(trainingImages, trainingLabels), makeSamples(testImages, testLabels), nil
 	}
 }
 
@@ -207,11 +208,11 @@ func compareLengths(images []vectors.Vector, labels []byte) error {
 
 // Produces example array - a set of labeled images suitable for
 // a network processing.
-func makeExamples(images []vectors.Vector, labels []byte) []*Example {
+func makeSamples(images []vectors.Vector, labels []byte) []*networks.Sample {
 	length := len(labels)
-	examples := make([]*Example, length)
+	samples := make([]*networks.Sample, length)
 	for i := 0; i < length; i++ {
-		examples[i] = &Example{images[i], labels[i]}
+		samples[i] = &networks.Sample{Activations: images[i], Label: labels[i]}
 	}
-	return examples
+	return samples
 }

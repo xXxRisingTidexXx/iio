@@ -12,10 +12,10 @@ func main() {
 		log.Println(err)
 	} else {
 		log.Println(len(trainingExamples))
-		log.Println(trainingExamples[0].Image)
+		log.Println(trainingExamples[0].Activations)
 		log.Println(trainingExamples[0].Label)
 		log.Println(len(testExamples))
-		log.Println(testExamples[0].Image)
+		log.Println(testExamples[0].Activations)
 		log.Println(testExamples[0].Label)
 	}
 }

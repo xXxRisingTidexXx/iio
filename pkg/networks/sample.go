@@ -1,4 +1,4 @@
-package loading
+package networks
 
 import (
 	"iio/pkg/vectors"
@@ -6,7 +6,7 @@ import (
 
 // An object representing labeled image suitable for a network
 // classification.
-type Example struct {
-	Image vectors.Vector
-	Label byte
+type Sample struct {
+	Activations vectors.Vector
+	Label       byte
 }
