@@ -5,6 +5,10 @@ import (
 	"iio/pkg/vectors"
 )
 
+// Specific neuron implementation, which leverages the key golang
+// feature - goroutines, channels ad esy-to-use concurrency.
+// Actually, the parallelization lies in simultaneous neuron
+// computation.
 type ParallelLayer struct {
 	neurons []neurons.Neuron
 }

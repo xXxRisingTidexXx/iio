@@ -5,7 +5,11 @@ import (
 	"iio/pkg/vectors"
 )
 
-// Primitive neural network implementation
+// Primitive neural network implementation, which leverages
+// multi-layer architecture. It uses sequentially-ordered hidden
+// layers transmitting the activation signal from neurons to
+// neurons towards the output layer. Each neuron of a following
+// layer is connected to each neuron of the previous one.
 type Perceptron struct {
 	layers []layers.Layer
 }
