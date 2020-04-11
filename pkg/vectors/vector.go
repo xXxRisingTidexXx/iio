@@ -27,9 +27,22 @@ func Vectorize(items []float64) Vector {
 // the nearest future there gonna appear dot and cross products,
 // inverse matrix computation, etc.
 type Vector interface {
+	// Calculates the array element amount.
 	Length() int
+
+	// Selects the element at the specified index. Should panic
+	// in case of a missing index or out-of-bounds-error.
 	Get(int) float64
+
+	// Sums two independent arrays producing the third independent
+	// one. Should panic in case of different array length.
 	Plus(Vector) Vector
+
+	// Subtracts element-wisely two vectors of the same length. In
+	// case of different lengths should produce a panic.
 	Minus(Vector) Vector
+
+	// Performs element-wise multiplication of two vectors.
+	// Different array length causes a panic.
 	TimesBy(float64) Vector
 }
