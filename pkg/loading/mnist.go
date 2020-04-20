@@ -4,17 +4,16 @@ import (
 	"compress/gzip"
 	"encoding/binary"
 	"fmt"
-	"iio/pkg/networks"
+	"iio/pkg/sampling"
 	"iio/pkg/vectors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"sync"
 	"time"
 )
 
 func NewMNISTLoader() Loader {
-	return &MNISTLoader{&http.Client{Timeout: 5 * time.Second}, &sync.WaitGroup{}}
+	return &MNISTLoader{&http.Client{Timeout: 10 * time.Second}, &sync.WaitGroup{}, 0.9}
 }
 
 // Downloads the whole MNIST database images with a single batch.
@@ -26,11 +25,12 @@ func NewMNISTLoader() Loader {
 // respectively. All files are represented by IDX format which is
 // very suitable for ND-array transfer.
 type MNISTLoader struct {
-	client    *http.Client
-	waitGroup *sync.WaitGroup
+	client       *http.Client
+	waitGroup    *sync.WaitGroup
+	trainingSize float64
 }
 
-func (loader *MNISTLoader) Load() ([]*networks.Sample, []*networks.Sample, error) {
+func (loader *MNISTLoader) Load() ([]*sampling.Sample, []*sampling.Sample, []*sampling.Sample, error) {
 	trainingImageChannel := make(chan []vectors.Vector, 1)
 	trainingLabelChannel := make(chan []byte, 1)
 	testImageChannel := make(chan []vectors.Vector, 1)
@@ -44,17 +44,19 @@ func (loader *MNISTLoader) Load() ([]*networks.Sample, []*networks.Sample, error
 	loader.waitGroup.Wait()
 	select {
 	case err := <-errChannel:
-		return nil, nil, err
+		return nil, nil, nil, err
 	default:
-		trainingImages, trainingLabels := <-trainingImageChannel, <-trainingLabelChannel
-		testImages, testLabels := <-testImageChannel, <-testLabelChannel
-		if err := compareLengths(trainingImages, trainingLabels); err != nil {
-			return nil, nil, err
+		testLabels, trainingLabels := <-testLabelChannel, <-trainingLabelChannel
+		testImages, trainingImages := <-testImageChannel, <-trainingImageChannel
+		if err := checkLengths(trainingImages, trainingLabels); err != nil {
+			return nil, nil, nil, err
 		}
-		if err := compareLengths(testImages, testLabels); err != nil {
-			return nil, nil, err
+		if err := checkLengths(testImages, testLabels); err != nil {
+			return nil, nil, nil, err
 		}
-		return makeSamples(trainingImages, trainingLabels), makeSamples(testImages, testLabels), nil
+		overallSet := makeSamples(trainingImages, trainingLabels)
+		trainingIndex := int(loader.trainingSize * float64(len(overallSet)))
+		return overallSet[:trainingIndex], overallSet[trainingIndex:], makeSamples(testImages, testLabels), nil
 	}
 }
 
@@ -81,7 +83,8 @@ func (loader *MNISTLoader) loadImages(
 
 // Fetches the target archive and unpacks it straight to the memory.
 func (loader *MNISTLoader) getAndDecompressIDX(filename string) ([]byte, error) {
-	log.Printf("Loading %s\n", filename)
+	fmt.Printf("Loading %s\n", filename)
+	start := time.Now()
 	response, err := loader.client.Get(fmt.Sprintf("http://yann.lecun.com/exdb/mnist/%s.gz", filename))
 	if err != nil {
 		return nil, err
@@ -90,7 +93,6 @@ func (loader *MNISTLoader) getAndDecompressIDX(filename string) ([]byte, error) 
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Decompressing %s\n", filename)
 	idx, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -99,7 +101,12 @@ func (loader *MNISTLoader) getAndDecompressIDX(filename string) ([]byte, error) 
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Downloaded %s: %.3f mib\n", filename, float64(len(idx))/(1<<20))
+	fmt.Printf(
+		"Loaded %s: %.3f mib (%.3f s)\n",
+		filename,
+		float64(len(idx))/(1<<20),
+		time.Since(start).Seconds(),
+	)
 	return idx, nil
 }
 
@@ -141,10 +148,10 @@ func parseImages(idx []byte) ([]vectors.Vector, error) {
 		return nil, err
 	}
 	images, length := make([]vectors.Vector, size), len(pixels)/size
-	for i := 0; i < size; i += length {
+	for i := 0; i < size; i++ {
 		items := make([]float64, length)
 		for j := 0; j < length; j++ {
-			items[j] = float64(pixels[i+j]) / 255.0
+			items[j] = float64(pixels[i*length+j]) / 255.0
 		}
 		images[i] = vectors.Vectorize(items)
 	}
@@ -198,21 +205,24 @@ func parseLabels(idx []byte) ([]byte, error) {
 
 // Checks the lengths of image and label arrays - they must
 // be equal to avoid an inconsistency.
-func compareLengths(images []vectors.Vector, labels []byte) error {
+func checkLengths(images []vectors.Vector, labels []byte) error {
 	imagesLength, labelsLength := len(images), len(labels)
-	if imagesLength == labelsLength {
-		return nil
+	if imagesLength != labelsLength {
+		return fmt.Errorf("mnist: sets have different lengths %d & %d", imagesLength, labelsLength)
 	}
-	return fmt.Errorf("mnist: sets have different lengths %d & %d", imagesLength, labelsLength)
+	if imagesLength < 10 {
+		return fmt.Errorf("mnist: sets have low length %d", imagesLength)
+	}
+	return nil
 }
 
 // Produces example array - a set of labeled images suitable for
 // a network processing.
-func makeSamples(images []vectors.Vector, labels []byte) []*networks.Sample {
+func makeSamples(images []vectors.Vector, labels []byte) []*sampling.Sample {
 	length := len(labels)
-	samples := make([]*networks.Sample, length)
+	samples := make([]*sampling.Sample, length)
 	for i := 0; i < length; i++ {
-		samples[i] = &networks.Sample{Activations: images[i], Label: labels[i]}
+		samples[i] = &sampling.Sample{Activations: images[i], Label: labels[i]}
 	}
 	return samples
 }
