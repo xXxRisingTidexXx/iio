@@ -1,6 +1,7 @@
 package networks
 
 import (
+	"iio/pkg/networks/reports"
 	"iio/pkg/sampling"
 	"iio/pkg/vectors"
 )
@@ -14,13 +15,13 @@ type Network interface {
 	// underlying neurons' weights in an optimal way.
 	Train([]*sampling.Sample)
 
+	// Can be used to check the net hyperparameters.
 	Validate([]*sampling.Sample)
 
 	// Checks the accuracy of the net, penetrating it with a set
-	// of new, more complicated samples. The returning value should
-	// be treated as the integrated classifier's accuracy indicator.
-	// Lies between 0 and 1 inclusively as well.
-	Test([]*sampling.Sample) float64
+	// of new, more complicated samples. Returns the overall
+	// conclusion of the check with common metrics.
+	Test([]*sampling.Sample) reports.Report
 
 	// Recognizes a single image, using the underlying configured
 	// set of activation functions. Returns the recognized digit.
