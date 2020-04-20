@@ -2,6 +2,8 @@ package networks
 
 import (
 	"iio/pkg/networks/layers"
+	"iio/pkg/networks/reports"
+	"iio/pkg/sampling"
 	"iio/pkg/vectors"
 )
 
@@ -14,18 +16,18 @@ type Perceptron struct {
 	layers []layers.Layer
 }
 
-func (perceptron *Perceptron) Train(samples []*Sample) float64 {
+func (perceptron *Perceptron) Train(samples []*sampling.Sample) {
 	panic("implement me")
 }
 
-func (perceptron *Perceptron) Test(samples []*Sample) float64 {
+func (perceptron *Perceptron) Validate(samples []*sampling.Sample) {
 	panic("implement me")
 }
 
-func (perceptron *Perceptron) Classify(vector vectors.Vector) byte {
+func (perceptron *Perceptron) Test(samples []*sampling.Sample) reports.Report {
 	panic("implement me")
 }
 
-func (perceptron *Perceptron) Dump(path string) error {
+func (perceptron *Perceptron) Evaluate(activations vectors.Vector) byte {
 	panic("implement me")
 }
