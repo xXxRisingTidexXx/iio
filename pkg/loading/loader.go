@@ -10,5 +10,5 @@ import (
 type Loader interface {
 	// Fetches a pack of labelled data and splits it into
 	// three unique groups - training, validation test ones.
-	Load() ([]*sampling.Sample, []*sampling.Sample, []*sampling.Sample, error)
+	Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples, error)
 }

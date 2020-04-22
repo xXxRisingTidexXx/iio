@@ -30,7 +30,7 @@ type MNISTLoader struct {
 	trainingSize float64
 }
 
-func (loader *MNISTLoader) Load() ([]*sampling.Sample, []*sampling.Sample, []*sampling.Sample, error) {
+func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples, error) {
 	trainingImageChannel := make(chan []vectors.Vector, 1)
 	trainingLabelChannel := make(chan []byte, 1)
 	testImageChannel := make(chan []vectors.Vector, 1)
@@ -55,8 +55,11 @@ func (loader *MNISTLoader) Load() ([]*sampling.Sample, []*sampling.Sample, []*sa
 			return nil, nil, nil, err
 		}
 		overallSet := makeSamples(trainingImages, trainingLabels)
-		trainingIndex := int(loader.trainingSize * float64(len(overallSet)))
-		return overallSet[:trainingIndex], overallSet[trainingIndex:], makeSamples(testImages, testLabels), nil
+		trainingIndex := int(loader.trainingSize * float64(overallSet.Length()))
+		return overallSet.To(trainingIndex),
+			overallSet.From(trainingIndex),
+			makeSamples(testImages, testLabels),
+			nil
 	}
 }
 
@@ -218,11 +221,11 @@ func checkLengths(images []vectors.Vector, labels []byte) error {
 
 // Produces example array - a set of labeled images suitable for
 // a network processing.
-func makeSamples(images []vectors.Vector, labels []byte) []*sampling.Sample {
-	length := len(labels)
-	samples := make([]*sampling.Sample, length)
-	for i := 0; i < length; i++ {
-		samples[i] = &sampling.Sample{Activations: images[i], Label: labels[i]}
-	}
-	return samples
+func makeSamples(images []vectors.Vector, labels []byte) *sampling.Samples {
+	return sampling.NewSamples(
+		len(labels),
+		func(i int) *sampling.Sample {
+			return &sampling.Sample{Activations: images[i], Label: labels[i]}
+		},
+	)
 }
