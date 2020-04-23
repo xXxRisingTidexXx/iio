@@ -1,7 +1,5 @@
 package vectors
 
-import "iio/pkg/numeric"
-
 // Transforms "raw" numerical slice into specific vector.
 // Implementation type depends on the slice content: if it
 // contains too many zero values, the future vector will be
@@ -10,7 +8,7 @@ func Vectorize(items []float64) Vector {
 	length, nulls := len(items), 0
 	sparseItems := make(map[int]float64, length/2)
 	for i, item := range items {
-		if numeric.IsNull(item) {
+		if isNull(item) {
 			nulls++
 			sparseItems[i] = item
 		}
