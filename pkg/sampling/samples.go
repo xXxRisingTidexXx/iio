@@ -25,11 +25,8 @@ func (samples *Samples) Length() int {
 }
 
 func (samples *Samples) To(i int) *Samples {
-	if i <= 0 {
-		return &Samples{[]*Sample{}}
-	}
-	if length := len(samples.items); i > length {
-		i = length
+	if i < 0 || i > samples.Length() {
+		panic(fmt.Sprintf("sampling: slice end is out of bounds %d", i))
 	}
 	items := make([]*Sample, i)
 	copy(items, samples.items[:i])
@@ -37,12 +34,9 @@ func (samples *Samples) To(i int) *Samples {
 }
 
 func (samples *Samples) From(i int) *Samples {
-	length := len(samples.items)
-	if i >= length {
-		return &Samples{[]*Sample{}}
-	}
-	if i < 0 {
-		i = 0
+	length := samples.Length()
+	if i < 0 || i >= length {
+		panic(fmt.Sprintf("sampling: slice beginning is out of bounds %d", i))
 	}
 	items := make([]*Sample, length-i)
 	copy(items, samples.items[i:])
@@ -57,7 +51,7 @@ func (samples *Samples) Get(i int) *Sample {
 }
 
 func (samples *Samples) Shuffle() *Samples {
-	length := len(samples.items)
+	length := samples.Length()
 	items := make([]*Sample, length)
 	copy(items, samples.items)
 	rand.Shuffle(
