@@ -12,8 +12,6 @@ type feedforwardNetwork struct {
 	learningRate float64
 }
 
-func (network *feedforwardNetwork) train(samples []*sampling.Sample) {
-	for epoch := 0; epoch < network.epochs; epoch++ {
-
-	}
+func (network *feedforwardNetwork) train(samples *sampling.Samples) {
+	for epoch := 0; epoch < network.epochs; epoch++ {}
 }
