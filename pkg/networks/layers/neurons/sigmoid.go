@@ -20,6 +20,6 @@ func (neuron *SigmoidNeuron) BackPropagate(delta float64) vectors.Vector {
 	panic("implement me")
 }
 
-func (neuron *SigmoidNeuron) Update(weightDeltas vectors.Vector, biasDelta float64) {
+func (neuron *SigmoidNeuron) Update(bunch *Bunch) {
 	panic("implement me")
 }
