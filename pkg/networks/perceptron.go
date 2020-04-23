@@ -1,7 +1,6 @@
 package networks
 
 import (
-	"iio/pkg/networks/layers"
 	"iio/pkg/networks/reports"
 	"iio/pkg/sampling"
 	"iio/pkg/vectors"
@@ -12,9 +11,7 @@ import (
 // layers transmitting the activation signal from neurons to
 // neurons towards the output layer. Each neuron of a following
 // layer is connected to each neuron of the previous one.
-type Perceptron struct {
-	layers []layers.Layer
-}
+type Perceptron struct {}
 
 func (perceptron *Perceptron) Train(samples []*sampling.Sample) {
 	panic("implement me")
