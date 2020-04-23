@@ -6,7 +6,9 @@ import (
 	"iio/pkg/vectors"
 )
 
-type Perceptron struct{}
+type Perceptron struct{
+	network *feedforwardNetwork
+}
 
 func (perceptron *Perceptron) Train(samples *sampling.Samples) {
 	panic("implement me")
