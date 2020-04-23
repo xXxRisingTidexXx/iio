@@ -9,7 +9,8 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	if trainingSamples, validationSamples, testSamples, err := loading.NewMNISTLoader().Load(); err != nil {
+	loader := loading.NewMNISTLoader()
+	if trainingSamples, validationSamples, testSamples, err := loader.Load(); err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Printf("Training set length: %d\n", trainingSamples.Length())
