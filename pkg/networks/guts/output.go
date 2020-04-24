@@ -1,22 +1,21 @@
 package guts
 
 import (
-	"iio/pkg/networks/guts/neurons"
-	"iio/pkg/vectors"
+	"gonum.org/v1/gonum/mat"
 )
 
 type OutputLayer struct {
 	layer *feedforwardLayer
 }
 
-func (layer *HiddenLayer) FeedForward(activations vectors.Vector) vectors.Vector {
+func (layer *OutputLayer) FeedForward(activations mat.Vector) mat.Vector {
 	panic("implement me")
 }
 
-func (layer *HiddenLayer) BackPropagate(activations vectors.Vector) vectors.Vector {
+func (layer *OutputLayer) BackPropagate(activations mat.Vector) mat.Vector {
 	panic("implement me")
 }
 
-func (layer *HiddenLayer) Update(bunches []*neurons.Bunch) {
+func (layer *OutputLayer) Update(weightDeltas mat.Matrix, biasDeltas mat.Vector) {
 	panic("implement me")
 }

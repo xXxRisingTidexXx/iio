@@ -1,12 +1,11 @@
 package guts
 
 import (
-	"iio/pkg/networks/guts/neurons"
-	"iio/pkg/vectors"
+	"gonum.org/v1/gonum/mat"
 )
 
 type Layer interface {
-	FeedForward(vectors.Vector) vectors.Vector
-	BackPropagate(vectors.Vector) vectors.Vector
-	Update([]*neurons.Bunch)
+	FeedForward(mat.Vector) mat.Vector
+	BackPropagate(mat.Vector) mat.Vector
+	Update(mat.Matrix, mat.Vector)
 }
