@@ -1,12 +1,12 @@
-package layers
+package guts
 
 import (
-	"iio/pkg/networks/layers/neurons"
+	"iio/pkg/networks/guts/neurons"
 	"iio/pkg/vectors"
 )
 
 type feedforwardLayer struct {
-	neurons []neurons.Neuron
+	neurons []Neuron
 }
 
 func (layer *feedforwardLayer) feedForward(activations vectors.Vector) vectors.Vector {

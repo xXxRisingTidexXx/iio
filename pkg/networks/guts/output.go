@@ -1,7 +1,7 @@
-package layers
+package guts
 
 import (
-	"iio/pkg/networks/layers/neurons"
+	"iio/pkg/networks/guts/neurons"
 	"iio/pkg/vectors"
 )
 

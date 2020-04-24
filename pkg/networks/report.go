@@ -1,3 +1,3 @@
-package reports
+package networks
 
 type Report struct{}

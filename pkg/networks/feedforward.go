@@ -1,12 +1,12 @@
 package networks
 
 import (
-	"iio/pkg/networks/layers"
+	"iio/pkg/networks/guts"
 	"iio/pkg/sampling"
 )
 
 type feedforwardNetwork struct {
-	layers       []layers.Layer
+	layers       []guts.Layer
 	epochs       int
 	batchSize    int
 	learningRate float64
