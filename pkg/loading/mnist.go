@@ -4,8 +4,9 @@ import (
 	"compress/gzip"
 	"encoding/binary"
 	"fmt"
+	"github.com/james-bowman/sparse"
+	"gonum.org/v1/gonum/mat"
 	"iio/pkg/sampling"
-	"iio/pkg/vectors"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -31,10 +32,10 @@ type MNISTLoader struct {
 }
 
 func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples, error) {
-	trainingImageChannel := make(chan []vectors.Vector, 1)
-	trainingLabelChannel := make(chan []byte, 1)
-	testImageChannel := make(chan []vectors.Vector, 1)
-	testLabelChannel := make(chan []byte, 1)
+	trainingImageChannel := make(chan []mat.Vector, 1)
+	trainingLabelChannel := make(chan []int, 1)
+	testImageChannel := make(chan []mat.Vector, 1)
+	testLabelChannel := make(chan []int, 1)
 	errChannel := make(chan error, 4)
 	loader.waitGroup.Add(4)
 	go loader.loadImages("train-images-idx3-ubyte", trainingImageChannel, errChannel)
@@ -67,7 +68,7 @@ func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampli
 // content. Any error at any stage causes immediate termination.
 func (loader *MNISTLoader) loadImages(
 	filename string,
-	imageChannel chan<- []vectors.Vector,
+	imageChannel chan<- []mat.Vector,
 	errChannel chan<- error,
 ) {
 	defer loader.waitGroup.Done()
@@ -117,7 +118,7 @@ func (loader *MNISTLoader) getAndDecompressIDX(filename string) ([]byte, error) 
 // content. Any error at any stage causes immediate termination.
 func (loader *MNISTLoader) loadLabels(
 	filename string,
-	labelChannel chan<- []byte,
+	labelChannel chan<- []int,
 	errChannel chan<- error,
 ) {
 	defer loader.waitGroup.Done()
@@ -145,21 +146,32 @@ func (loader *MNISTLoader) loadLabels(
 // are flattened and divided by 255 to obtain activation vector
 // for further computations. All images are read in C-style - i.e.
 // row-by-row or row-wise.
-func parseImages(idx []byte) ([]vectors.Vector, error) {
+func parseImages(idx []byte) ([]mat.Vector, error) {
 	pixels, size, err := checkIDX(idx, 3)
 	if err != nil {
 		return nil, err
 	}
-	images, length := make([]vectors.Vector, size), len(pixels)/size
+	images, length := make([]mat.Vector, size), len(pixels)/size
 	for i := 0; i < size; i++ {
-		items := make([]float64, length)
+		nonZero := 0
 		for j := 0; j < length; j++ {
-			items[j] = float64(pixels[i*length+j]) / 255.0
+			if pixels[i*length+j] != 0 {
+				nonZero++
+			}
 		}
-		images[i] = vectors.Vectorize(items)
+		indices, items := make([]int, nonZero), make([]float64, nonZero)
+		for j, k := 0, 0; j < length; j++ {
+			if pixel := pixels[i*length+j]; pixel != 0 {
+				indices[k], items[k] = j, float64(pixel) / 255.0
+				k++
+			}
+		}
+		images[i] = sparse.NewVector(length, indices, items)
 	}
 	return images, nil
 }
+
+type DOKVector struct {}
 
 // Validates the structure of an IDX byte array. Basically, the
 // most significant requirements are appropriate content length,
@@ -193,22 +205,24 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 // Processes an image label IDX slice. Here should be followed
 // all the requirements of IDX format plus all the labels should
 // be one-digit unsigned integers.
-func parseLabels(idx []byte) ([]byte, error) {
+func parseLabels(idx []byte) ([]int, error) {
 	labels, _, err := checkIDX(idx, 1)
 	if err != nil {
 		return nil, err
 	}
+	ints := make([]int, len(labels))
 	for i, label := range labels {
 		if label > 9 {
 			return nil, fmt.Errorf("invalid idx: invalid label %d at index %d", label, i)
 		}
+		ints[i] = int(label)
 	}
-	return labels, nil
+	return ints, nil
 }
 
 // Checks the lengths of image and label arrays - they must
 // be equal to avoid an inconsistency.
-func checkLengths(images []vectors.Vector, labels []byte) error {
+func checkLengths(images []mat.Vector, labels []int) error {
 	imagesLength, labelsLength := len(images), len(labels)
 	if imagesLength != labelsLength {
 		return fmt.Errorf("mnist: sets have different lengths %d & %d", imagesLength, labelsLength)
@@ -221,7 +235,7 @@ func checkLengths(images []vectors.Vector, labels []byte) error {
 
 // Produces example array - a set of labeled images suitable for
 // a network processing.
-func makeSamples(images []vectors.Vector, labels []byte) *sampling.Samples {
+func makeSamples(images []mat.Vector, labels []int) *sampling.Samples {
 	return sampling.NewSamples(
 		len(labels),
 		func(i int) *sampling.Sample {
