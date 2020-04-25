@@ -1,12 +1,10 @@
 package sampling
 
 import (
-	"iio/pkg/vectors"
+	"gonum.org/v1/gonum/mat"
 )
 
-// An object representing a labeled image suitable for a network
-// classification.
 type Sample struct {
-	Activations vectors.Vector
-	Label       byte
+	Activations mat.Vector
+	Label       int
 }
