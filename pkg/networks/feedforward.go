@@ -14,6 +14,8 @@ type feedforwardNetwork struct {
 
 func (network *feedforwardNetwork) train(samples *sampling.Samples) {
 	for epoch := 0; epoch < network.epochs; epoch++ {
+		shuffled := samples.Shuffle()
+
 	}
 }
 
