@@ -5,7 +5,7 @@ import (
 	"math/rand"
 )
 
-func NewSamples(length int, maker func(i int) *Sample) *Samples {
+func NewSamples(length int, maker func(int) *Sample) *Samples {
 	if length < 0 {
 		panic(fmt.Sprintf("sampling: length shouldn't be negative, but got %d", length))
 	}
@@ -93,4 +93,10 @@ func (samples *Samples) Batch(size int) *Samples {
 	batch := &Samples{samples.items[samples.position : samples.position+offset], offset, 0}
 	samples.position += offset
 	return batch
+}
+
+func (samples *Samples) Range(ranger func(int, *Sample)) {
+	for i, sample := range samples.items {
+		ranger(i, sample)
+	}
 }
