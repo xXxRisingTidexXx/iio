@@ -4,16 +4,24 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-type feedforwardLayer struct {
+type FeedforwardLayer struct {
 	neuron  Neuron
 	weights mat.Matrix
 	biases  mat.Vector
 }
 
-func (layer *feedforwardLayer) feedForward(activations mat.Vector) mat.Vector {
+func (layer *FeedforwardLayer) FeedForward(activations mat.Vector) mat.Vector {
 	panic("implement me")
 }
 
-func (layer *feedforwardLayer) update(delta *Delta) {
+func (layer *FeedforwardLayer) ProduceNodes(diffs mat.Vector) mat.Vector {
+	panic("implement me")
+}
+
+func (layer *FeedforwardLayer) BackPropagate(nodes mat.Vector) mat.Vector {
+	panic("implement me")
+}
+
+func (layer *FeedforwardLayer) Update(delta *Delta) {
 	panic("implement me")
 }
