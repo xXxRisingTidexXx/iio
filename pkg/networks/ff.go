@@ -7,14 +7,14 @@ import (
 	"sync"
 )
 
-type feedforwardNetwork struct {
+type FFNetwork struct {
 	layers       []guts.Layer
 	epochs       int
 	batchSize    int
 	learningRate float64
 }
 
-func (network *feedforwardNetwork) train(samples *sampling.Samples) {
+func (network *FFNetwork) Train(samples *sampling.Samples) {
 	for epoch := 0; epoch < network.epochs; epoch++ {
 		newSamples := samples.Shuffle()
 		for newSamples.Next() {
@@ -24,7 +24,7 @@ func (network *feedforwardNetwork) train(samples *sampling.Samples) {
 			waitGroup.Add(length)
 			deltasChannel := make(chan *guts.Deltas, length)
 			for i := 0; i < length; i++ {
-				go network.propagate(batch.Get(i), waitGroup, deltasChannel)
+				go network.train(batch.Get(i), waitGroup, deltasChannel)
 			}
 			waitGroup.Wait()
 			totalDeltas := guts.NewDeltas(nil, nil)
@@ -39,7 +39,7 @@ func (network *feedforwardNetwork) train(samples *sampling.Samples) {
 	}
 }
 
-func (network *feedforwardNetwork) propagate(
+func (network *FFNetwork) train(
 	sample *sampling.Sample,
 	waitGroup *sync.WaitGroup,
 	deltasChannel chan<- *guts.Deltas,
@@ -54,15 +54,19 @@ func (network *feedforwardNetwork) propagate(
 	nodes := make([]mat.Vector, length)
 
 	for i := length - 2; i >= 0; i-- {
-		
+
 	}
 	deltasChannel <- guts.NewDeltas(nodes, activations)
 }
 
-func (network *feedforwardNetwork) validate(samples *sampling.Samples) {
+func (network *FFNetwork) Validate(samples *sampling.Samples) {
 	panic("implement me")
 }
 
-func (network *feedforwardNetwork) test(samples *sampling.Samples) Report {
+func (network *FFNetwork) Test(samples *sampling.Samples) Report {
+	panic("implement me")
+}
+
+func (network *FFNetwork) Evaluate(activations mat.Vector) int {
 	panic("implement me")
 }
