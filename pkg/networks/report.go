@@ -1,6 +1,6 @@
 package networks
 
-type Report struct{
+type Report struct {
 	Accuracy  float64
 	Precision float64
 	Recall    float64

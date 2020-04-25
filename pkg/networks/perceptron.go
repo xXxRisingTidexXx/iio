@@ -5,7 +5,7 @@ import (
 	"iio/pkg/sampling"
 )
 
-type Perceptron struct{
+type Perceptron struct {
 	network *feedforwardNetwork
 }
 

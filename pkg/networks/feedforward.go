@@ -13,7 +13,8 @@ type feedforwardNetwork struct {
 }
 
 func (network *feedforwardNetwork) train(samples *sampling.Samples) {
-	for epoch := 0; epoch < network.epochs; epoch++ {}
+	for epoch := 0; epoch < network.epochs; epoch++ {
+	}
 }
 
 func (network *feedforwardNetwork) validate(samples *sampling.Samples) {

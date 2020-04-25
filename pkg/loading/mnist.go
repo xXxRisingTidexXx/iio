@@ -162,7 +162,7 @@ func parseImages(idx []byte) ([]mat.Vector, error) {
 		indices, items := make([]int, nonZero), make([]float64, nonZero)
 		for j, k := 0, 0; j < length; j++ {
 			if pixel := pixels[i*length+j]; pixel != 0 {
-				indices[k], items[k] = j, float64(pixel) / 255.0
+				indices[k], items[k] = j, float64(pixel)/255.0
 				k++
 			}
 		}
@@ -170,8 +170,6 @@ func parseImages(idx []byte) ([]mat.Vector, error) {
 	}
 	return images, nil
 }
-
-type DOKVector struct {}
 
 // Validates the structure of an IDX byte array. Basically, the
 // most significant requirements are appropriate content length,
