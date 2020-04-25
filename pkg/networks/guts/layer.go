@@ -7,5 +7,5 @@ import (
 type Layer interface {
 	FeedForward(mat.Vector) mat.Vector
 	BackPropagate(mat.Vector) mat.Vector
-	Update(mat.Matrix, mat.Vector)
+	Update(*Delta)
 }

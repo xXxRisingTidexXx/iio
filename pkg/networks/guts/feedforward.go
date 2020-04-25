@@ -14,6 +14,6 @@ func (layer *feedforwardLayer) feedForward(activations mat.Vector) mat.Vector {
 	panic("implement me")
 }
 
-func (layer *feedforwardLayer) update(weightDeltas mat.Matrix, biasDeltas mat.Vector) {
+func (layer *feedforwardLayer) update(delta *Delta) {
 	panic("implement me")
 }

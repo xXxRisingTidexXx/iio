@@ -14,6 +14,6 @@ func (layer *HiddenLayer) BackPropagate(activations mat.Vector) mat.Vector {
 	panic("implement me")
 }
 
-func (layer *HiddenLayer) Update(weightDeltas mat.Matrix, biasDeltas mat.Vector) {
+func (layer *HiddenLayer) Update(delta *Delta) {
 	panic("implement me")
 }
