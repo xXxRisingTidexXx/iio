@@ -1,6 +1,7 @@
 package networks
 
 import (
+	"gonum.org/v1/gonum/mat"
 	"iio/pkg/networks/guts"
 	"iio/pkg/sampling"
 	"sync"
@@ -41,9 +42,21 @@ func (network *feedforwardNetwork) train(samples *sampling.Samples) {
 func (network *feedforwardNetwork) propagate(
 	sample *sampling.Sample,
 	waitGroup *sync.WaitGroup,
-	deltasChannel chan *guts.Deltas,
+	deltasChannel chan<- *guts.Deltas,
 ) {
 	defer waitGroup.Done()
+	length := len(network.layers)
+	activations := make([]mat.Vector, length+1)
+	activations[0] = sample.Activations
+	for i, layer := range network.layers {
+		activations[i+1] = layer.FeedForward(activations[i])
+	}
+	nodes := make([]mat.Vector, length)
+
+	for i := length - 2; i >= 0; i-- {
+		
+	}
+	deltasChannel <- guts.NewDeltas(nodes, activations)
 }
 
 func (network *feedforwardNetwork) validate(samples *sampling.Samples) {
