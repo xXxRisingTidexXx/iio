@@ -94,9 +94,3 @@ func (samples *Samples) Batch(size int) *Samples {
 	samples.position += offset
 	return batch
 }
-
-func (samples *Samples) Range(ranger func(int, *Sample)) {
-	for i, sample := range samples.items {
-		ranger(i, sample)
-	}
-}
