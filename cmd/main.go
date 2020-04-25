@@ -10,11 +10,11 @@ func main() {
 	if trainingSamples, validationSamples, testSamples, err := loader.Load(); err != nil {
 		fmt.Println(err)
 	} else {
-		//fmt.Println(trainingSamples.Get(0).Activations)
-		//fmt.Println(trainingSamples.Get(1).Activations)
-		//fmt.Println(trainingSamples.Get(30000).Activations)
 		fmt.Printf("Training set length: %d\n", trainingSamples.Length())
 		fmt.Printf("Validation set length: %d\n", validationSamples.Length())
 		fmt.Printf("Test set length: %d\n", testSamples.Length())
+		fmt.Println(trainingSamples.Get(12047).Activations)
+		fmt.Println(validationSamples.Get(3021).Activations)
+		fmt.Println(testSamples.Get(9541).Activations)
 	}
 }
