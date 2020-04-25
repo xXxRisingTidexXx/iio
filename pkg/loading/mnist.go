@@ -14,7 +14,7 @@ import (
 )
 
 func NewMNISTLoader() Loader {
-	return &MNISTLoader{&http.Client{Timeout: 10 * time.Second}, &sync.WaitGroup{}, 0.9}
+	return &MNISTLoader{&http.Client{Timeout: 10 * time.Second}, 0.9}
 }
 
 // Downloads the whole MNIST database images with a single batch.
@@ -27,22 +27,22 @@ func NewMNISTLoader() Loader {
 // very suitable for ND-array transfer.
 type MNISTLoader struct {
 	client       *http.Client
-	waitGroup    *sync.WaitGroup
 	trainingSize float64
 }
 
 func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples, error) {
+	waitGroup := &sync.WaitGroup{}
+	waitGroup.Add(4)
 	trainingImageChannel := make(chan []mat.Vector, 1)
 	trainingLabelChannel := make(chan []int, 1)
 	testImageChannel := make(chan []mat.Vector, 1)
 	testLabelChannel := make(chan []int, 1)
 	errChannel := make(chan error, 4)
-	loader.waitGroup.Add(4)
-	go loader.loadImages("train-images-idx3-ubyte", trainingImageChannel, errChannel)
-	go loader.loadLabels("train-labels-idx1-ubyte", trainingLabelChannel, errChannel)
-	go loader.loadImages("t10k-images-idx3-ubyte", testImageChannel, errChannel)
-	go loader.loadLabels("t10k-labels-idx1-ubyte", testLabelChannel, errChannel)
-	loader.waitGroup.Wait()
+	go loader.loadImages("train-images-idx3-ubyte", waitGroup, trainingImageChannel, errChannel)
+	go loader.loadLabels("train-labels-idx1-ubyte", waitGroup, trainingLabelChannel, errChannel)
+	go loader.loadImages("t10k-images-idx3-ubyte", waitGroup, testImageChannel, errChannel)
+	go loader.loadLabels("t10k-labels-idx1-ubyte", waitGroup, testLabelChannel, errChannel)
+	waitGroup.Wait()
 	select {
 	case err := <-errChannel:
 		return nil, nil, nil, err
@@ -68,10 +68,11 @@ func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampli
 // content. Any error at any stage causes immediate termination.
 func (loader *MNISTLoader) loadImages(
 	filename string,
+	waitGroup *sync.WaitGroup,
 	imageChannel chan<- []mat.Vector,
 	errChannel chan<- error,
 ) {
-	defer loader.waitGroup.Done()
+	defer waitGroup.Done()
 	idx, err := loader.getAndDecompressIDX(filename)
 	if err != nil {
 		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
@@ -118,10 +119,11 @@ func (loader *MNISTLoader) getAndDecompressIDX(filename string) ([]byte, error) 
 // content. Any error at any stage causes immediate termination.
 func (loader *MNISTLoader) loadLabels(
 	filename string,
+	waitGroup *sync.WaitGroup,
 	labelChannel chan<- []int,
 	errChannel chan<- error,
 ) {
-	defer loader.waitGroup.Done()
+	defer waitGroup.Done()
 	idx, err := loader.getAndDecompressIDX(filename)
 	if err != nil {
 		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
