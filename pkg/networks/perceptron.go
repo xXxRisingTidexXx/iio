@@ -1,8 +1,8 @@
 package networks
 
 import (
+	"gonum.org/v1/gonum/mat"
 	"iio/pkg/sampling"
-	"iio/pkg/vectors"
 )
 
 type Perceptron struct{
@@ -21,6 +21,6 @@ func (perceptron *Perceptron) Test(samples *sampling.Samples) Report {
 	panic("implement me")
 }
 
-func (perceptron *Perceptron) Evaluate(activations vectors.Vector) byte {
+func (perceptron *Perceptron) Evaluate(activations mat.Vector) int {
 	panic("implement me")
 }
