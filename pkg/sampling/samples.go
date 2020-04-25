@@ -21,7 +21,7 @@ func NewSamples(length int, maker func(i int) *Sample) *Samples {
 
 type Samples struct {
 	items    []*Sample
-	length 	 int
+	length   int
 	position int
 }
 
@@ -72,13 +72,25 @@ func (samples *Samples) Shuffle() *Samples {
 }
 
 func (samples *Samples) Next() bool {
-	return samples.position < samples.length
+	isAvailable := samples.position < samples.length
+	if !isAvailable {
+		samples.position = 0
+	}
+	return isAvailable
 }
 
 func (samples *Samples) Batch(size int) *Samples {
 	if size < 1 {
 		panic(fmt.Sprintf("sampling: too low batch size %d", size))
 	}
-	newPosition := samples.position
-	return nil
+	if !samples.Next() {
+		panic(fmt.Sprintf("sampling: iteration ended"))
+	}
+	offset := size
+	if difference := samples.length - samples.position; difference < size {
+		offset = difference
+	}
+	batch := &Samples{samples.items[samples.position : samples.position+offset], offset, 0}
+	samples.position += offset
+	return batch
 }
