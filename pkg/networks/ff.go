@@ -8,7 +8,8 @@ import (
 )
 
 type FFNetwork struct {
-	layers       []guts.Layer
+	layers       *guts.Layers
+	costFunction guts.CostFunction
 	epochs       int
 	batchSize    int
 	learningRate float64
@@ -32,8 +33,8 @@ func (network *FFNetwork) Train(samples *sampling.Samples) {
 				totalDeltas = totalDeltas.Add(deltas)
 			}
 			totalDeltas = totalDeltas.Scale(-network.learningRate / float64(length))
-			for i, layer := range network.layers {
-				layer.Update(totalDeltas.Get(i))
+			for i := 0; i < network.layers.Length(); i++ {
+				network.layers.Get(i).Update(totalDeltas.Get(i))
 			}
 		}
 	}
@@ -45,16 +46,20 @@ func (network *FFNetwork) train(
 	deltasChannel chan<- *guts.Deltas,
 ) {
 	defer waitGroup.Done()
-	length := len(network.layers)
+	length := network.layers.Length()
 	activations := make([]mat.Vector, length+1)
 	activations[0] = sample.Activations
-	for i, layer := range network.layers {
-		activations[i+1] = layer.FeedForward(activations[i])
+	for i := 0; i < length; i++ {
+		activations[i+1] = network.layers.Get(i).FeedForward(activations[i])
 	}
 	nodes := make([]mat.Vector, length)
-
+	nodes[length - 1] = network.layers.Last().ProduceNodes(
+		network.costFunction.Evaluate(activations[length], sample.Label),
+	)
 	for i := length - 2; i >= 0; i-- {
-
+		nodes[i] = network.layers.Get(i).ProduceNodes(
+			network.layers.Get(i + 1).BackPropagate(nodes[i + 1]),
+		)
 	}
 	deltasChannel <- guts.NewDeltas(nodes, activations)
 }
