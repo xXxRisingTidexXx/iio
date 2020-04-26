@@ -53,12 +53,12 @@ func (network *FFNetwork) train(
 		activations[i+1] = network.layers.Get(i).FeedForward(activations[i])
 	}
 	nodes := make([]mat.Vector, length)
-	nodes[length - 1] = network.layers.Last().ProduceNodes(
+	nodes[length-1] = network.layers.Last().ProduceNodes(
 		network.costFunction.Evaluate(activations[length], sample.Label),
 	)
 	for i := length - 2; i >= 0; i-- {
 		nodes[i] = network.layers.Get(i).ProduceNodes(
-			network.layers.Get(i + 1).BackPropagate(nodes[i + 1]),
+			network.layers.Get(i + 1).BackPropagate(nodes[i+1]),
 		)
 	}
 	deltasChannel <- guts.NewDeltas(nodes, activations)
