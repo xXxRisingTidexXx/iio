@@ -8,11 +8,11 @@ import (
 )
 
 type FFNetwork struct {
-	layers       *guts.Layers
-	costFunction guts.CostFunction
 	epochs       int
 	batchSize    int
 	learningRate float64
+	layers       *guts.Layers
+	costFunction guts.CostFunction
 }
 
 func (network *FFNetwork) Train(samples *sampling.Samples) {
