@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"iio/pkg/loading"
+	"math/rand"
+	"time"
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	loader := loading.NewMNISTLoader()
 	if trainingSamples, validationSamples, testSamples, err := loader.Load(); err != nil {
 		fmt.Println(err)
