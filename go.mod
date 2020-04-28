@@ -1,6 +1,6 @@
 module iio
 
-go 1.13
+go 1.14
 
 require (
 	github.com/james-bowman/sparse v0.0.0-20200417092555-20c9a65923d1
