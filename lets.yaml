@@ -5,7 +5,7 @@ commands:
     cmd: go get -t -u all && go get -u github.com/onsi/ginkgo/ginkgo
   compile:
     description: Compiles the whole project and runs it
-    cmd: go build -o bin/iio cmd/main.go
+    cmd: go build -o iio cmd/main.go
   run:
     description: Executes the binary
     cmd: bin/iio
