@@ -32,10 +32,33 @@ var _ = Describe("samples", func() {
 			Expect(samples.Length()).To(Equal(1))
 			Expect(samples.Get(0)).To(Equal(sample))
 		})
-		//It("shouldn't construct `cause of elements with different activation lengths", func() {})
-		//It("shouldn't construct `cause of elements with nil activations", func() {})
-		//It("shouldn't construct `cause of trash elements", func() {})
-		//It("should construct a collection with multiple robust samples", func() {})
+		Spare("shouldn't construct `cause of elements with different activation lengths", func() {
+			_ = sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(4, []float64{0.34, 0.568, 0.981, 0.002}), 3),
+				sampling.NewSample(mat.NewVecDense(4, []float64{0.5, 0.6667, 0.758, 0.03}), 9),
+				sampling.NewSample(mat.NewVecDense(6, []float64{0.403, 0.8, 0.1, 0.65, 0, 0.7}), 7),
+			)
+		})
+		Spare("shouldn't construct `cause of trash elements", func() {
+			_ = sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.2, 0.3}), 1),
+				nil,
+				sampling.NewSample(mat.NewVecDense(5, []float64{1, 2, 3, 4, 5}), 6),
+			)
+		})
+		With("should construct a collection with zero samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(4, nil), 0),
+				sampling.NewSample(mat.NewVecDense(4, nil), 0),
+				sampling.NewSample(mat.NewVecDense(4, nil), 0),
+				sampling.NewSample(mat.NewVecDense(4, nil), 0),
+			)
+			Expect(samples.Length()).To(Equal(4))
+			Expect(cmp.Equal(samples.Get(0), samples.Get(1))).To(BeTrue())
+			Expect(cmp.Equal(samples.Get(1), samples.Get(2))).To(BeTrue())
+			Expect(cmp.Equal(samples.Get(2), samples.Get(3))).To(BeTrue())
+		})
+		//With("should construct a collection with multiple robust samples", func() {})
 	})
 	Context("comparison", func() {
 		//It("should equate the same samples", func() {})

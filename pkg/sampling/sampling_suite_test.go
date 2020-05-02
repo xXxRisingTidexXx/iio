@@ -9,7 +9,7 @@ import (
 
 func TestSampling(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Sampling Suite")
+	RunSpecs(t, "sampling suite")
 }
 
 var _ = BeforeSuite(func() {

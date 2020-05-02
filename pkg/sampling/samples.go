@@ -14,6 +14,9 @@ func NewSamples(items ...*Sample) *Samples {
 		if item == nil {
 			panic(fmt.Sprintf("sampling: sample at %d is nil", i))
 		}
+		if i > 1 && item.activations.Len() != items[i-1].activations.Len() {
+			panic(fmt.Sprintf("sampling: sample at %d has uncommon length", i))
+		}
 	}
 	return &Samples{items, len(items), 0}
 }
