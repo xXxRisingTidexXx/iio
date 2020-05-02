@@ -36,13 +36,21 @@ var Equal = gomega.Equal
 var BeNil = gomega.BeNil
 var BeTrue = gomega.BeTrue
 var BeFalse = gomega.BeFalse
-var HaveOccurred = gomega.HaveOccurred
 
-// Custom checkers
-func ExpectNoPanic() {
-	Expect(recover()).To(BeNil())
+func With(text string, body func()) {
+	It(text, func() {
+		defer func() {
+			Expect(recover()).To(BeNil())
+		}()
+		body()
+	})
 }
 
-func ExpectPanic() {
-	Expect(recover()).NotTo(BeNil())
+func Spare(text string, body func()) {
+	It(text, func() {
+		defer func() {
+			Expect(recover()).NotTo(BeNil())
+		}()
+		body()
+	})
 }
