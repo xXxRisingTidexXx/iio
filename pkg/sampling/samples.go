@@ -2,6 +2,7 @@ package sampling
 
 import (
 	"fmt"
+	"github.com/google/go-cmp/cmp"
 	"math/rand"
 )
 
@@ -22,10 +23,34 @@ func NewSamples(length int, maker func(int) *Sample) *Samples {
 	return &Samples{items, length, 0}
 }
 
+func New(items ...*Sample) *Samples {
+	if items == nil {
+		items = make([]*Sample, 0)
+	}
+	for i, item := range items {
+		if item == nil {
+			panic(fmt.Sprintf("sampling: sample at %d is nil", i))
+		}
+	}
+	return &Samples{items, len(items), 0}
+}
+
 type Samples struct {
 	items    []*Sample
 	length   int
 	position int
+}
+
+func (samples *Samples) Equal(other *Samples) bool {
+	if samples == other {
+		return true
+	}
+	if other == nil {
+		return false
+	}
+	return cmp.Equal(samples.items, other.items) &&
+		samples.length == other.length &&
+		samples.position == other.position
 }
 
 func (samples *Samples) Length() int {
