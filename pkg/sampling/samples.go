@@ -25,15 +25,11 @@ type Samples struct {
 }
 
 func (samples *Samples) Equal(other *Samples) bool {
-	if samples == other {
-		return true
-	}
-	if other == nil {
-		return false
-	}
-	return cmp.Equal(samples.items, other.items) &&
-		samples.length == other.length &&
-		samples.position == other.position
+	return samples == other ||
+		other != nil &&
+			cmp.Equal(samples.items, other.items) &&
+			samples.length == other.length &&
+			samples.position == other.position
 }
 
 func (samples *Samples) Length() int {
@@ -65,7 +61,7 @@ func (samples *Samples) From(i int) *Samples {
 
 func (samples *Samples) Get(i int) *Sample {
 	if i < 0 || i >= samples.length {
-		panic(fmt.Sprintf("sampling: index is out of bounds %d", i))
+		panic(fmt.Sprintf("sampling: index %d is out of bounds [%d; %d)", i, 0, samples.length))
 	}
 	return samples.items[i]
 }
