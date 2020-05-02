@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func NewMNISTLoader() Loader {
+func NewMNISTLoader() *MNISTLoader {
 	return &MNISTLoader{&http.Client{Timeout: 10 * time.Second}, 0.9}
 }
 
@@ -30,7 +30,7 @@ type MNISTLoader struct {
 	trainingSize float64
 }
 
-func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples, error) {
+func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples) {
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(4)
 	trainingImageChannel := make(chan []mat.Vector, 1)
