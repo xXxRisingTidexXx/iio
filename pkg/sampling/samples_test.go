@@ -58,17 +58,111 @@ var _ = Describe("samples", func() {
 			Expect(cmp.Equal(samples.Get(1), samples.Get(2))).To(BeTrue())
 			Expect(cmp.Equal(samples.Get(2), samples.Get(3))).To(BeTrue())
 		})
-		//With("should construct a collection with multiple robust samples", func() {})
+		With("should construct a collection with multiple robust samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(5, []float64{0.1, 0.2, 0.3, 0.3, 0.1}), 4),
+				sampling.NewSample(mat.NewVecDense(5, []float64{0, 1, 1, 0.2, 0}), 5),
+				sampling.NewSample(mat.NewVecDense(5, []float64{0.102, 0.4628, 0.21, 0.111, 0.97}), 2),
+				sampling.NewSample(mat.NewVecDense(5, nil), 0),
+				sampling.NewSample(mat.NewVecDense(5, []float64{0, 1, 1, 0.2, 0}), 5),
+			)
+			Expect(samples.Length()).To(Equal(5))
+			Expect(cmp.Equal(samples.Get(1), samples.Get(4))).To(BeTrue())
+		})
 	})
 	Context("comparison", func() {
-		//It("should equate the same samples", func() {})
-		//It("shouldn't equate nil and non-nil samples", func() {})
-		With("should equate samples from nil & non-nil slices", func() {
-			Expect(cmp.Equal(sampling.NewSamples(), sampling.NewSamples(make([]*sampling.Sample, 0)...))).
-				To(BeTrue())
+		With("should equate the same-reference samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(5, nil), 0),
+				sampling.NewSample(mat.NewVecDense(5, []float64{0, 1, 1, 0, 1}), 2),
+			)
+			Expect(cmp.Equal(samples, samples)).To(BeTrue())
 		})
-		//It("should equate non-empty variadic and slice-like samples", func() {})
-		//It("shouldn't equate samples of different lengths", func() {})
+		With("shouldn't equate nil and non-nil samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(5, nil), 0),
+				sampling.NewSample(mat.NewVecDense(5, []float64{0.003, 0.98, 1, 0.6, 0.1}), 2),
+			)
+			Expect(cmp.Equal(samples, nil)).To(BeFalse())
+			Expect(cmp.Equal(nil, samples)).To(BeFalse())
+		})
+		With("should equate samples from nil & non-nil slices", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(),
+					sampling.NewSamples(make([]*sampling.Sample, 0)...),
+				),
+			).To(BeTrue())
+		})
+		With("should equate non-empty variadic and slice-like samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(5, []float64{0.2, 1, 0.7, 1, 1}), 4),
+					),
+					sampling.NewSamples(
+						[]*sampling.Sample{
+							sampling.NewSample(mat.NewVecDense(5, []float64{0.2, 1, 0.7, 1, 1}), 4),
+						}...,
+					),
+				),
+			).To(BeTrue())
+		})
+		With("shouldn't equate samples of different lengths", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.29, 1, 0, 1}), 2)),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.86, 0, 1, 0.73}), 3),
+						sampling.NewSample(mat.NewVecDense(4, []float64{1, 0.617, 0, 0.016}), 8),
+					),
+				),
+			).To(BeFalse())
+		})
+		With("shouldn't equate samples of different content", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 1, 0, 0.11}), 2),
+						sampling.NewSample(mat.NewVecDense(4, nil), 0),
+					),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.81, 0.9, 0.621, 0.3}), 3),
+						sampling.NewSample(mat.NewVecDense(4, []float64{1, 0, 0, 0}), 8),
+					),
+				),
+			).To(BeFalse())
+		})
+		With("shouldn't equate `cause of different element order", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0.89, 0, 0.4}), 7),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0, 1, 0, 0}), 1),
+					),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0, 1, 0, 0}), 1),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0.89, 0, 0.4}), 7),
+					),
+				),
+			).To(BeFalse())
+		})
+		With("should equate the same-content samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 0, 0}), 6),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0, 1, 1, 1}), 9),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0, 0.45, 0.87, 0.1}), 8),
+					),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 0, 0}), 6),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0, 1, 1, 1}), 9),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0, 0.45, 0.87, 0.1}), 8),
+					),
+				),
+			).To(BeTrue())
+		})
 	})
 	Context("slicing", func() {})
 	Context("indexing", func() {})
