@@ -25,12 +25,9 @@ func (sample *Sample) Label() int {
 	return sample.label
 }
 
-//func (sample *Sample) Equal(other *Sample) bool {
-//	if sample == other {
-//		return true
-//	}
-//	if other == nil {
-//		return false
-//	}
-//
-//}
+func (sample *Sample) Equal(other *Sample) bool {
+	return sample == other ||
+		other != nil &&
+			mat.Equal(sample.activations, other.activations) &&
+			sample.label == other.label
+}
