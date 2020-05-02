@@ -9,6 +9,9 @@ func NewSamples(length int, maker func(int) *Sample) *Samples {
 	if length < 0 {
 		panic(fmt.Sprintf("sampling: length shouldn't be negative, but got %d", length))
 	}
+	if maker == nil {
+		panic(fmt.Sprintf("sampling: maker can't be nil"))
+	}
 	items := make([]*Sample, length)
 	for i := 0; i < length; i++ {
 		items[i] = maker(i)
