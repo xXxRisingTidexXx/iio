@@ -17,4 +17,4 @@ commands:
     cmd: golangci-lint run
   test:
     description: Run test suites
-    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -nodes 4
+    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -nodes 4 -timeout 2m
