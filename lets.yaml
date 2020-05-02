@@ -8,7 +8,7 @@ commands:
     cmd: go build -o iio cmd/main.go
   run:
     description: Executes the binary
-    cmd: bin/iio
+    cmd: ./iio
   format:
     description: Prettify the source code
     cmd: gofmt -w -s .

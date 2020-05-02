@@ -9,5 +9,5 @@
 *.iml
 out
 gen
-bin
+iio
 .lets
