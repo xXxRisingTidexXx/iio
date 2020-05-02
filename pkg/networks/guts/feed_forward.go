@@ -14,8 +14,13 @@ func (layer *FeedForwardLayer) FeedForward(activations mat.Vector) mat.Vector {
 	panic("implement me")
 }
 
+// Forms a node level
 func (layer *FeedForwardLayer) ProduceNodes(diffs mat.Vector) mat.Vector {
-	panic("implement me")
+	row, _ := layer.weights.Dims()
+	vector := mat.NewVecDense(row, nil)
+	vector.MulVec(layer.weights, diffs)
+	vector.AddVec(vector, layer.biases)
+	return layer.neuron.Evaluate(vector)
 }
 
 func (layer *FeedForwardLayer) BackPropagate(nodes mat.Vector) mat.Vector {
