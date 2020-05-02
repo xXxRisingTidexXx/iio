@@ -13,8 +13,16 @@ func NewSample(activations mat.Vector, label int) *Sample {
 }
 
 type Sample struct {
-	Activations mat.Vector
-	Label       int
+	activations mat.Vector
+	label       int
+}
+
+func (sample *Sample) Activations() mat.Vector {
+	return sample.activations
+}
+
+func (sample *Sample) Label() int {
+	return sample.label
 }
 
 //func (sample *Sample) Equal(other *Sample) bool {
