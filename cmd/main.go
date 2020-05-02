@@ -16,8 +16,5 @@ func main() {
 		fmt.Printf("Training set length: %d\n", trainingSamples.Length())
 		fmt.Printf("Validation set length: %d\n", validationSamples.Length())
 		fmt.Printf("Test set length: %d\n", testSamples.Length())
-		fmt.Println(trainingSamples.Get(12047).Activations)
-		fmt.Println(validationSamples.Get(3021).Activations)
-		fmt.Println(testSamples.Get(9541).Activations)
 	}
 }
