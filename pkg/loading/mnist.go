@@ -236,10 +236,10 @@ func checkLengths(images []mat.Vector, labels []int) error {
 // Produces example array - a set of labeled images suitable for
 // a network processing.
 func makeSamples(images []mat.Vector, labels []int) *sampling.Samples {
-	return sampling.NewSamples(
-		len(labels),
-		func(i int) *sampling.Sample {
-			return &sampling.Sample{Activations: images[i], Label: labels[i]}
-		},
-	)
+	length := len(images)
+	items := make([]*sampling.Sample, length)
+	for i := 0; i < length; i++ {
+		items[i] = sampling.NewSample(images[i], labels[i])
+	}
+	return sampling.NewSamples(items...)
 }
