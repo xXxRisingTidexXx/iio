@@ -34,4 +34,15 @@ var Expect = gomega.Expect
 // Declarations for Gomega Matchers
 var Equal = gomega.Equal
 var BeNil = gomega.BeNil
+var BeTrue = gomega.BeTrue
+var BeFalse = gomega.BeFalse
 var HaveOccurred = gomega.HaveOccurred
+
+// Custom checkers
+func ExpectNoPanic() {
+	Expect(recover()).To(BeNil())
+}
+
+func ExpectPanic() {
+	Expect(recover()).NotTo(BeNil())
+}
