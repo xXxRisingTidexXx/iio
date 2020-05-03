@@ -26,7 +26,7 @@ func NewMNISTLoader() *MNISTLoader {
 // very suitable for ND-array transfer.
 type MNISTLoader struct {
 	// HTTP request maker, powered by timeout magic.
-	client       *http.Client
+	client *http.Client
 
 	// A number from (0; 1) indicating relative size of the training
 	// images concernedly MNIST overall training set. Used to split
