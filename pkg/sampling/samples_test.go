@@ -1,6 +1,7 @@
 package sampling_test
 
 import (
+	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/sampling"
@@ -635,5 +636,60 @@ var _ = Describe("samples", func() {
 			Expect(samples.Next()).To(BeTrue())
 		})
 	})
-	Context("scenarios", func() {})
+	Context("scenarios", func() {
+		With("should split the samples and get a few elements", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(2, []float64{1, 1}), 3),
+				sampling.NewSample(mat.NewVecDense(2, []float64{1, 0}), 2),
+				sampling.NewSample(mat.NewVecDense(2, []float64{0, 1}), 1),
+				sampling.NewSample(mat.NewVecDense(2, []float64{0, 0}), 0),
+			)
+			left, right := samples.To(2), samples.From(2)
+			Expect(cmp.Equal(left.Get(0), samples.Get(0))).To(BeTrue())
+			Expect(cmp.Equal(left.Get(1), samples.Get(1))).To(BeTrue())
+			Expect(cmp.Equal(right.Get(0), samples.Get(2))).To(BeTrue())
+			Expect(cmp.Equal(right.Get(1), samples.Get(3))).To(BeTrue())
+		})
+		With("should adequately leverage slicing", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 3),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 2}), 1),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 2, 3}), 2),
+				sampling.NewSample(mat.NewVecDense(3, []float64{2, 3, 5}), 0),
+				sampling.NewSample(mat.NewVecDense(3, []float64{3, 5, 8}), 4),
+				sampling.NewSample(mat.NewVecDense(3, []float64{5, 8, 13}), 6),
+				sampling.NewSample(mat.NewVecDense(3, []float64{8, 13, 21}), 7),
+				sampling.NewSample(mat.NewVecDense(3, []float64{13, 21, 34}), 8),
+				sampling.NewSample(mat.NewVecDense(3, []float64{21, 34, 55}), 9),
+				sampling.NewSample(mat.NewVecDense(3, []float64{34, 55, 89}), 5),
+			)
+			Expect(
+				cmp.Equal(
+					samples.From(2).To(7).To(6).To(2).From(1).Get(0),
+					sampling.NewSample(mat.NewVecDense(3, []float64{2, 3, 5}), 0),
+				),
+			).To(BeTrue())
+			Expect(
+				cmp.Equal(
+					samples.To(20).From(1).To(7).To(5).To(3).From(-3).To(2).From(3),
+					sampling.NewSamples(),
+				),
+			).To(BeTrue())
+		})
+		With("should correctly shuffle and iterate over samples", func() {
+			rand.Seed(113)
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 1}), 7),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0}), 6),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 0, 1}), 5),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 0, 0}), 4),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 3),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 0}), 2),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 0}), 0),
+			)
+			fmt.Println(samples.Shuffle())
+			fmt.Println(samples.Shuffle())
+		})
+	})
 })
