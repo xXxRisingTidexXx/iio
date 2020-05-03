@@ -103,7 +103,7 @@ func (samples *Samples) Batch(size int) *Samples {
 	if size < 1 {
 		panic(fmt.Sprintf("sampling: too low batch size %d", size))
 	}
-	if !samples.Next() {
+	if samples.position >= samples.length {
 		panic(fmt.Sprintf("sampling: batching ended"))
 	}
 	offset := size

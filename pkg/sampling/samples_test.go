@@ -548,17 +548,90 @@ var _ = Describe("samples", func() {
 			batch1 := samples.Batch(2)
 			batch2 := samples.Batch(2)
 			Expect(2).To(And(Equal(batch1.Length()), Equal(batch2.Length())))
-			Expect(batch1.Get(0)).To(Equal(samples.Get(0)))
-			Expect(batch1.Get(1)).To(Equal(samples.Get(1)))
-			Expect(batch2.Get(0)).To(Equal(samples.Get(2)))
-			Expect(batch2.Get(1)).To(Equal(samples.Get(3)))
+			Expect(cmp.Equal(batch1.Get(0), samples.Get(0))).To(BeTrue())
+			Expect(cmp.Equal(batch1.Get(1), samples.Get(1))).To(BeTrue())
+			Expect(cmp.Equal(batch2.Get(0), samples.Get(2))).To(BeTrue())
+			Expect(cmp.Equal(batch2.Get(1), samples.Get(3))).To(BeTrue())
 		})
-		//With("should batch with partial size over multi-element samples", func() {})
-		//Spare("shouldn't batch more then once in a row", func() {})
-		//With("should equate already-iterated and non-iterated samples", func() {})
-		//With("shouldn't equate partially-iterated and non-iterated samples", func() {})
-		//With("should normally iterate with multiple batch size", func() {})
-		//With("should normally reiterate over the same samples", func() {})
+		With("should batch with partial size over multi-element samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.675483, 0.123, 0.75849}), 2),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.3902, 0.00023, 0.0045}), 1),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.444563, 0.1123, 0.90134}), 4),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.878685, 0.00123, 1}), 3),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.239987, 0.00001, 0.9762}), 3),
+			)
+			batch1 := samples.Batch(3)
+			batch2 := samples.Batch(3)
+			Expect(batch1.Length()).To(Equal(3))
+			Expect(batch2.Length()).To(Equal(2))
+			Expect(cmp.Equal(batch1.Get(0), samples.Get(0))).To(BeTrue())
+			Expect(cmp.Equal(batch1.Get(1), samples.Get(1))).To(BeTrue())
+			Expect(cmp.Equal(batch1.Get(2), samples.Get(2))).To(BeTrue())
+			Expect(cmp.Equal(batch2.Get(0), samples.Get(3))).To(BeTrue())
+			Expect(cmp.Equal(batch2.Get(1), samples.Get(4))).To(BeTrue())
+		})
+		Spare("shouldn't batch more then once in a row", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.878685, 0.00123, 1}), 3),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.239987, 0.00001, 0.9762}), 3),
+			)
+			batch := samples.Batch(2)
+			Expect(batch.Length()).To(Equal(2))
+			Expect(cmp.Equal(batch.Get(0), samples.Get(0))).To(BeTrue())
+			Expect(cmp.Equal(batch.Get(1), samples.Get(1))).To(BeTrue())
+			_ = samples.Batch(2)
+		})
+		With("should distinct partially-iterated and fully-iterated samples", func() {
+			samples1 := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.239987, 1, 1}), 7),
+				sampling.NewSample(mat.NewVecDense(3, nil), 5),
+				sampling.NewSample(mat.NewVecDense(3, nil), 0),
+			)
+			samples2 := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.239987, 1, 1}), 7),
+				sampling.NewSample(mat.NewVecDense(3, nil), 5),
+				sampling.NewSample(mat.NewVecDense(3, nil), 0),
+			)
+			Expect(cmp.Equal(samples1, samples2)).To(BeTrue())
+			for samples1.Next() {
+				_ = samples1.Batch(2)
+				Expect(cmp.Equal(samples1, samples2)).To(BeFalse())
+			}
+			Expect(cmp.Equal(samples1, samples2)).To(BeTrue())
+		})
+		With("should normally iterate with multiple batch size", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 0}), 0),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 0}), 2),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 3),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 0, 0}), 4),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 0, 1}), 5),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0}), 6),
+				sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 1}), 7),
+			)
+			for i := 0; samples.Next(); i++ {
+				batch := samples.Batch(3)
+				for j := 0; j < batch.Length(); j++ {
+					Expect(cmp.Equal(batch.Get(j), samples.Get(i*3+j))).To(BeTrue())
+				}
+			}
+		})
+		With("should normally reiterate over the same samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(2, []float64{0, 0}), 0),
+				sampling.NewSample(mat.NewVecDense(2, []float64{0, 1}), 1),
+				sampling.NewSample(mat.NewVecDense(2, []float64{1, 0}), 2),
+				sampling.NewSample(mat.NewVecDense(2, []float64{1, 1}), 3),
+			)
+			for samples.Next() {
+				Expect(samples.Batch(2).Length()).To(Equal(2))
+			}
+			for samples.Next() {
+				Expect(samples.Batch(2).Length()).To(Equal(2))
+			}
+		})
 	})
 	Context("scenarios", func() {})
 })
