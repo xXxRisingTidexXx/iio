@@ -509,7 +509,7 @@ var _ = ginkgo.Describe("samples", func() {
 			test.Equate(batch2.Get(0), samples.Get(3))
 			test.Equate(batch2.Get(1), samples.Get(4))
 		})
-		test.Spare("shouldn't batch more then once in a row", func() {
+		test.Spare("shouldn't batch more than once in a row", func() {
 			samples := sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.878685, 0.00123, 1}), 3),
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.239987, 0.00001, 0.9762}), 3),
