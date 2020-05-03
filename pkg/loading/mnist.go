@@ -25,10 +25,18 @@ func NewMNISTLoader() *MNISTLoader {
 // respectively. All files are represented by IDX format which is
 // very suitable for ND-array transfer.
 type MNISTLoader struct {
+	// HTTP request maker, powered by timeout magic.
 	client       *http.Client
+
+	// A number from (0; 1) indicating relative size of the training
+	// images concernedly MNIST overall training set. Used to split
+	// this selection into training and validation sets.
 	trainingSize float64
 }
 
+// Concurrently reads 4 .gz archives, unpacks them, parses and finally
+// builds 3 output sample sets. MNIST overall training set should be
+// divided to define validation images as well.
 func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples) {
 	trainingImageChannel := make(chan []mat.Vector, 1)
 	trainingLabelChannel := make(chan []int, 1)
