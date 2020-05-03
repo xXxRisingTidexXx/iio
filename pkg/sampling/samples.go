@@ -35,6 +35,10 @@ func (samples *Samples) Equal(other *Samples) bool {
 			samples.position == other.position
 }
 
+func (samples *Samples) String() string {
+	return fmt.Sprintf("{%v %d %d}", samples.items, samples.length, samples.position)
+}
+
 func (samples *Samples) Length() int {
 	return samples.length
 }

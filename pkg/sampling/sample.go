@@ -31,3 +31,7 @@ func (sample *Sample) Equal(other *Sample) bool {
 			mat.Equal(sample.activations, other.activations) &&
 			sample.label == other.label
 }
+
+func (sample *Sample) String() string {
+	return fmt.Sprintf("{%v %d}", sample.activations, sample.label)
+}
