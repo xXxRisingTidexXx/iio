@@ -164,7 +164,227 @@ var _ = Describe("samples", func() {
 			).To(BeTrue())
 		})
 	})
-	Context("slicing", func() {})
+	Context("slicing", func() {
+		With("to (-inf; 0] on empty samples", func() {
+			Expect(cmp.Equal(sampling.NewSamples().To(-3), sampling.NewSamples())).To(BeTrue())
+		})
+		With("to 1 on empty samples", func() {
+			Expect(cmp.Equal(sampling.NewSamples().To(1), sampling.NewSamples())).To(BeTrue())
+		})
+		With("to [2; +inf) on empty samples", func() {
+			Expect(cmp.Equal(sampling.NewSamples().To(3), sampling.NewSamples())).To(BeTrue())
+		})
+		With("from (-inf; -1] on empty samples", func() {
+			Expect(cmp.Equal(sampling.NewSamples().From(-1), sampling.NewSamples())).To(BeTrue())
+		})
+		With("from 0 on empty samples", func() {
+			Expect(cmp.Equal(sampling.NewSamples().From(0), sampling.NewSamples())).To(BeTrue())
+		})
+		With("from [1; +inf) on empty samples", func() {
+			Expect(cmp.Equal(sampling.NewSamples().From(2), sampling.NewSamples())).To(BeTrue())
+		})
+		With("to (-inf; 0] on single-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5),
+					).To(0),
+					sampling.NewSamples(),
+				),
+			).To(BeTrue())
+		})
+		With("to 1 on single-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)).To(1),
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)),
+				),
+			).To(BeTrue())
+		})
+		With("to [2; +inf) on single-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)).To(3),
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)),
+				),
+			).To(BeTrue())
+		})
+		With("from (-inf; -1] on single-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)).From(-4),
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)),
+				),
+			).To(BeTrue())
+		})
+		With("from 0 on single-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)).From(0),
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)),
+				),
+			).To(BeTrue())
+		})
+		With("from [1; +inf) on single-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)).From(1),
+					sampling.NewSamples(),
+				),
+			).To(BeTrue())
+		})
+		With("to (-inf; 0] on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					).To(-10),
+					sampling.NewSamples(),
+				),
+			).To(BeTrue())
+		})
+		With("to 1 on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+					).To(1),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("to [2; len - 1] on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
+					).To(2),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("to len on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+					).To(4),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("to [len + 1; +inf) on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					).To(6),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("from (-inf; -1] on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					).From(-60),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("from 0 on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0.9}), 6),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					).From(0),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0.9}), 6),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("from [1; len - 2] on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					).From(2),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("from len - 1 on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					).From(3),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("from [len; +inf) on multiple-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					).From(3),
+					sampling.NewSamples(),
+				),
+			).To(BeTrue())
+		})
+	})
 	Context("indexing", func() {})
 	Context("shuffling", func() {})
 	Context("batching", func() {

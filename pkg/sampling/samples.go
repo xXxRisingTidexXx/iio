@@ -40,26 +40,32 @@ func (samples *Samples) Length() int {
 }
 
 func (samples *Samples) To(i int) *Samples {
-	if i < 0 || i > samples.length {
-		panic(fmt.Sprintf("sampling: slice end is out of bounds %d", i))
+	end := i
+	if end < 0 {
+		end = 0
+	} else if end > samples.length {
+		end = samples.length
 	}
-	items := make([]*Sample, i)
-	if i > 0 {
-		copy(items, samples.items[:i])
+	items := make([]*Sample, end)
+	if end > 0 {
+		copy(items, samples.items[:end])
 	}
-	return &Samples{items, i, 0}
+	return &Samples{items, end, 0}
 }
 
 func (samples *Samples) From(i int) *Samples {
-	if i < 0 || i > samples.length {
-		panic(fmt.Sprintf("sampling: slice beginning is out of bounds %d", i))
+	start := i
+	if start < 0 {
+		start = 0
+	} else if start > samples.length {
+		start = samples.length
 	}
-	newLength := samples.length - i
-	items := make([]*Sample, newLength)
-	if newLength > 0 {
-		copy(items, samples.items[i:])
+	length := samples.length - start
+	items := make([]*Sample, length)
+	if length > 0 {
+		copy(items, samples.items[start:])
 	}
-	return &Samples{items, newLength, 0}
+	return &Samples{items, length, 0}
 }
 
 func (samples *Samples) Get(i int) *Sample {
