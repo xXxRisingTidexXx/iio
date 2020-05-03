@@ -1,7 +1,6 @@
 package sampling_test
 
 import (
-	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/sampling"
@@ -675,21 +674,6 @@ var _ = Describe("samples", func() {
 					sampling.NewSamples(),
 				),
 			).To(BeTrue())
-		})
-		With("should correctly shuffle and iterate over samples", func() {
-			rand.Seed(113)
-			samples := sampling.NewSamples(
-				sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 1}), 7),
-				sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0}), 6),
-				sampling.NewSample(mat.NewVecDense(3, []float64{1, 0, 1}), 5),
-				sampling.NewSample(mat.NewVecDense(3, []float64{1, 0, 0}), 4),
-				sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 3),
-				sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 0}), 2),
-				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1),
-				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 0}), 0),
-			)
-			fmt.Println(samples.Shuffle())
-			fmt.Println(samples.Shuffle())
 		})
 	})
 })
