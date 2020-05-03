@@ -459,7 +459,61 @@ var _ = Describe("samples", func() {
 			).Get(109)
 		})
 	})
-	Context("shuffling", func() {})
+	Context("shuffling", func() {
+		With("should yield the same empty samples", func() {
+			Expect(cmp.Equal(sampling.NewSamples().Shuffle(), sampling.NewSamples())).To(BeTrue())
+		})
+		With("should yield the same single-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.8, 0.2, 0.1282}), 9),
+					).Shuffle(),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.8, 0.2, 0.1282}), 9),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("should yield the same equal-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+					).Shuffle(),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+					),
+				),
+			).To(BeTrue())
+		})
+		With("should yield different multi-element samples", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.8112, 0.2301, 0.6748}), 8),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.501293, 0.212893, 0.30231}), 9),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.123891, 0.93812, 0.30128}), 4),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.342340123, 1, 0.23923}), 7),
+						sampling.NewSample(mat.NewVecDense(3, []float64{1, 0.2327485, 0.11192}), 1),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.6345, 0.00203}), 5),
+					).Shuffle(),
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.501293, 0.212893, 0.30231}), 9),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.342340123, 1, 0.23923}), 7),
+						sampling.NewSample(mat.NewVecDense(3, []float64{1, 0.2327485, 0.11192}), 1),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.6345, 0.00203}), 5),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.8112, 0.2301, 0.6748}), 8),
+						sampling.NewSample(mat.NewVecDense(3, []float64{0.123891, 0.93812, 0.30128}), 4),
+					),
+				),
+			).To(BeTrue())
+		})
+	})
 	Context("batching", func() {
 		//It("shouldn't equate iterating and non-iterating samples", func() {})
 		//It("should equate already-iterated and non-iterated samples", func() {})
