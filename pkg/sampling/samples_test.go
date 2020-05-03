@@ -1,7 +1,6 @@
 package sampling_test
 
 import (
-	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/ginkgo"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/sampling"
@@ -23,10 +22,10 @@ var _ = ginkgo.Describe("samples", func() {
 		test.Spare("shouldn't construct `cause of nil variadic elements", func() {
 			_ = sampling.NewSamples(nil, nil)
 		})
-		test.Spare("shouldn't construct `cause of slice test.With implicit nils", func() {
+		test.Spare("shouldn't construct `cause of slice with implicit nils", func() {
 			_ = sampling.NewSamples(make([]*sampling.Sample, 10)...)
 		})
-		test.Spare("shouldn't construct `cause of slice test.With explicit nils", func() {
+		test.Spare("shouldn't construct `cause of slice with explicit nils", func() {
 			_ = sampling.NewSamples([]*sampling.Sample{nil, nil, nil}...)
 		})
 		test.With("should construct from a single non-nil element", func() {
@@ -35,7 +34,7 @@ var _ = ginkgo.Describe("samples", func() {
 			test.Equate(samples.Length(), 1)
 			test.Equate(samples.Get(0), sample)
 		})
-		test.Spare("shouldn't construct `cause of elements test.With different activation lengths", func() {
+		test.Spare("shouldn't construct `cause of elements with different activation lengths", func() {
 			_ = sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(4, []float64{0.34, 0.568, 0.981, 0.002}), 3),
 				sampling.NewSample(mat.NewVecDense(4, []float64{0.5, 0.6667, 0.758, 0.03}), 9),
@@ -49,7 +48,7 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(5, []float64{1, 2, 3, 4, 5}), 6),
 			)
 		})
-		test.With("should construct a collection test.With zero samples", func() {
+		test.With("should construct a collection with zero samples", func() {
 			samples := sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(4, nil), 0),
 				sampling.NewSample(mat.NewVecDense(4, nil), 0),
@@ -57,11 +56,11 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(4, nil), 0),
 			)
 			test.Equate(samples.Length(), 4)
-			test.Comply(samples.Get(0), samples.Get(1))
-			test.Comply(samples.Get(1), samples.Get(2))
-			test.Comply(samples.Get(2), samples.Get(3))
+			test.Equate(samples.Get(0), samples.Get(1))
+			test.Equate(samples.Get(1), samples.Get(2))
+			test.Equate(samples.Get(2), samples.Get(3))
 		})
-		test.With("should construct a collection test.With multiple robust samples", func() {
+		test.With("should construct a collection with multiple robust samples", func() {
 			samples := sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(5, []float64{0.1, 0.2, 0.3, 0.3, 0.1}), 4),
 				sampling.NewSample(mat.NewVecDense(5, []float64{0, 1, 1, 0.2, 0}), 5),
@@ -70,7 +69,7 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(5, []float64{0, 1, 1, 0.2, 0}), 5),
 			)
 			test.Equate(samples.Length(), 5)
-			test.Comply(samples.Get(1), samples.Get(4))
+			test.Equate(samples.Get(1), samples.Get(4))
 		})
 	})
 	ginkgo.Context("comparison", func() {
@@ -79,7 +78,7 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(5, nil), 0),
 				sampling.NewSample(mat.NewVecDense(5, []float64{0, 1, 1, 0, 1}), 2),
 			)
-			test.Comply(samples, samples)
+			test.Equate(samples, samples)
 		})
 		test.With("shouldn't equate nil and non-nil samples", func() {
 			samples := sampling.NewSamples(
@@ -90,10 +89,10 @@ var _ = ginkgo.Describe("samples", func() {
 			test.Discern(nil, samples)
 		})
 		test.With("should equate samples from nil & non-nil slices", func() {
-			test.Comply(sampling.NewSamples(), sampling.NewSamples(make([]*sampling.Sample, 0)...))
+			test.Equate(sampling.NewSamples(), sampling.NewSamples(make([]*sampling.Sample, 0)...))
 		})
 		test.With("should equate non-empty variadic and slice-like samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(
 					sampling.NewSample(mat.NewVecDense(5, []float64{0.2, 1, 0.7, 1, 1}), 4),
 				),
@@ -138,7 +137,7 @@ var _ = ginkgo.Describe("samples", func() {
 			)
 		})
 		test.With("should equate the same-content samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(
 					sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 0, 0}), 6),
 					sampling.NewSample(mat.NewVecDense(4, []float64{0, 1, 1, 1}), 9),
@@ -154,61 +153,61 @@ var _ = ginkgo.Describe("samples", func() {
 	})
 	ginkgo.Context("slicing", func() {
 		test.With("to (-inf; 0] on empty samples", func() {
-			test.Comply(sampling.NewSamples().To(-3), sampling.NewSamples())
+			test.Equate(sampling.NewSamples().To(-3), sampling.NewSamples())
 		})
 		test.With("to 1 on empty samples", func() {
-			test.Comply(sampling.NewSamples().To(1), sampling.NewSamples())
+			test.Equate(sampling.NewSamples().To(1), sampling.NewSamples())
 		})
 		test.With("to [2; +inf) on empty samples", func() {
-			test.Comply(sampling.NewSamples().To(3), sampling.NewSamples())
+			test.Equate(sampling.NewSamples().To(3), sampling.NewSamples())
 		})
 		test.With("from (-inf; -1] on empty samples", func() {
-			test.Comply(sampling.NewSamples().From(-1), sampling.NewSamples())
+			test.Equate(sampling.NewSamples().From(-1), sampling.NewSamples())
 		})
 		test.With("from 0 on empty samples", func() {
-			test.Comply(sampling.NewSamples().From(0), sampling.NewSamples())
+			test.Equate(sampling.NewSamples().From(0), sampling.NewSamples())
 		})
 		test.With("from [1; +inf) on empty samples", func() {
-			test.Comply(sampling.NewSamples().From(2), sampling.NewSamples())
+			test.Equate(sampling.NewSamples().From(2), sampling.NewSamples())
 		})
 		test.With("to (-inf; 0] on single-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)).To(0),
 				sampling.NewSamples(),
 			)
 		})
 		test.With("to 1 on single-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)).To(1),
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)),
 			)
 		})
 		test.With("to [2; +inf) on single-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)).To(3),
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(4, []float64{0.9, 0, 1, 0}), 5)),
 			)
 		})
 		test.With("from (-inf; -1] on single-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)).From(-4),
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)),
 			)
 		})
 		test.With("from 0 on single-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)).From(0),
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)),
 			)
 		})
 		test.With("from [1; +inf) on single-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1)).From(1),
 				sampling.NewSamples(),
 			)
 		})
 		test.With("to (-inf; 0] on multi-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(
 					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
 					sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
@@ -218,7 +217,7 @@ var _ = ginkgo.Describe("samples", func() {
 			)
 		})
 		test.With("to 1 on multi-element samples", func() {
-			test.Comply(
+			test.Equate(
 				sampling.NewSamples(
 					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
 					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
@@ -228,129 +227,113 @@ var _ = ginkgo.Describe("samples", func() {
 			)
 		})
 		test.With("to [2; len - 1] on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
-					).To(2),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
+				).To(2),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("to len on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
-					).To(4),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+				).To(4),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0.579, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.61, 0, 0.5}), 1),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("to [len + 1; +inf) on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-					).To(6),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+				).To(6),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("from (-inf; -1] on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-					).From(-60),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+				).From(-60),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.4, 0.01}), 3),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("from 0 on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0.9}), 6),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-					).From(0),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0.9}), 6),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0.9}), 6),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+				).From(0),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{1, 1, 0.9}), 6),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("from [1; len - 2] on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-					).From(2),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+				).From(2),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("from len - 1 on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-					).From(3),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+				).From(3),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("from [len; +inf) on multi-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
-					).From(3),
-					sampling.NewSamples(),
-				),
-			).To(BeTrue())
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.1, 0, 0.1}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.2, 0.25, 0.8}), 7),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 1, 1}), 2),
+				).From(3),
+				sampling.NewSamples(),
+			)
 		})
 	})
 	ginkgo.Context("indexing", func() {
@@ -367,12 +350,10 @@ var _ = ginkgo.Describe("samples", func() {
 			_ = sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2)).Get(-30)
 		})
 		test.With("should yield in multi-element collection the single element", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2)).Get(0),
-					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2),
-				),
-			).To(BeTrue())
+			test.Equate(
+				sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2)).Get(0),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2),
+			)
 		})
 		test.Spare("should fail in single-element collection `cause of positive index", func() {
 			_ = sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 0.9}), 4)).Get(6)
@@ -384,41 +365,35 @@ var _ = ginkgo.Describe("samples", func() {
 			).Get(-3)
 		})
 		test.With("should yield in multi-element collection the first element", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(4, []float64{0.782, 0.2, 0.1, 0}), 2),
-						sampling.NewSample(mat.NewVecDense(4, []float64{0.6154, 0.8788, 0, 0}), 5),
-						sampling.NewSample(mat.NewVecDense(4, nil), 0),
-					).Get(0),
+			test.Equate(
+				sampling.NewSamples(
 					sampling.NewSample(mat.NewVecDense(4, []float64{0.782, 0.2, 0.1, 0}), 2),
-				),
-			).To(BeTrue())
+					sampling.NewSample(mat.NewVecDense(4, []float64{0.6154, 0.8788, 0, 0}), 5),
+					sampling.NewSample(mat.NewVecDense(4, nil), 0),
+				).Get(0),
+				sampling.NewSample(mat.NewVecDense(4, []float64{0.782, 0.2, 0.1, 0}), 2),
+			)
 		})
 		test.With("should yield in multi-element collection a middle element", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(4, []float64{0.52, 0.2, 0.1, 0}), 2),
-						sampling.NewSample(mat.NewVecDense(4, nil), 0),
-						sampling.NewSample(mat.NewVecDense(4, []float64{0, 0, 0, 0.87}), 3),
-					).Get(1),
-					sampling.NewSample(mat.NewVecDense(4, []float64{0, 0, 0, 0}), 0),
-				),
-			).To(BeTrue())
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(4, []float64{0.52, 0.2, 0.1, 0}), 2),
+					sampling.NewSample(mat.NewVecDense(4, nil), 0),
+					sampling.NewSample(mat.NewVecDense(4, []float64{0, 0, 0, 0.87}), 3),
+				).Get(1),
+				sampling.NewSample(mat.NewVecDense(4, []float64{0, 0, 0, 0}), 0),
+			)
 		})
 		test.With("should yield in multi-element collection the last element", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(4, nil), 0),
-						sampling.NewSample(mat.NewVecDense(4, []float64{0.2, 0, 0.1, 0}), 2),
-						sampling.NewSample(mat.NewVecDense(4, []float64{0.52, 0.2, 0.1, 0}), 2),
-						sampling.NewSample(mat.NewVecDense(4, []float64{1, 0, 1, 0.754}), 3),
-					).Get(3),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(4, nil), 0),
+					sampling.NewSample(mat.NewVecDense(4, []float64{0.2, 0, 0.1, 0}), 2),
+					sampling.NewSample(mat.NewVecDense(4, []float64{0.52, 0.2, 0.1, 0}), 2),
 					sampling.NewSample(mat.NewVecDense(4, []float64{1, 0, 1, 0.754}), 3),
-				),
-			).To(BeTrue())
+				).Get(3),
+				sampling.NewSample(mat.NewVecDense(4, []float64{1, 0, 1, 0.754}), 3),
+			)
 		})
 		test.Spare("should fail in multi-element collection `cause of too large index", func() {
 			_ = sampling.NewSamples(
@@ -429,70 +404,64 @@ var _ = ginkgo.Describe("samples", func() {
 	})
 	ginkgo.Context("shuffling", func() {
 		test.With("should yield the same empty samples", func() {
-			Expect(cmp.Equal(sampling.NewSamples().Shuffle(), sampling.NewSamples())).To(BeTrue())
+			test.Equate(sampling.NewSamples().Shuffle(), sampling.NewSamples())
 		})
 		test.With("should yield the same single-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.8, 0.2, 0.1282}), 9),
-					).Shuffle(),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.8, 0.2, 0.1282}), 9),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.8, 0.2, 0.1282}), 9),
+				).Shuffle(),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.8, 0.2, 0.1282}), 9),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("should yield the same equal-element samples", func() {
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
-					).Shuffle(),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+				).Shuffle(),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.5, 0.2, 0.3}), 8),
 				),
-			).To(BeTrue())
+			)
 		})
 		test.With("should yield different multi-element samples", func() {
 			rand.Seed(42)
-			Expect(
-				cmp.Equal(
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.8112, 0.2301, 0.6748}), 8),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.501293, 0.212893, 0.30231}), 9),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.123891, 0.93812, 0.30128}), 4),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.342340123, 1, 0.23923}), 7),
-						sampling.NewSample(mat.NewVecDense(3, []float64{1, 0.2327485, 0.11192}), 1),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.6345, 0.00203}), 5),
-					).Shuffle(),
-					sampling.NewSamples(
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.501293, 0.212893, 0.30231}), 9),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.342340123, 1, 0.23923}), 7),
-						sampling.NewSample(mat.NewVecDense(3, []float64{1, 0.2327485, 0.11192}), 1),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.6345, 0.00203}), 5),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.8112, 0.2301, 0.6748}), 8),
-						sampling.NewSample(mat.NewVecDense(3, []float64{0.123891, 0.93812, 0.30128}), 4),
-					),
+			test.Equate(
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.8112, 0.2301, 0.6748}), 8),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.501293, 0.212893, 0.30231}), 9),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.123891, 0.93812, 0.30128}), 4),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.342340123, 1, 0.23923}), 7),
+					sampling.NewSample(mat.NewVecDense(3, []float64{1, 0.2327485, 0.11192}), 1),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.6345, 0.00203}), 5),
+				).Shuffle(),
+				sampling.NewSamples(
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.501293, 0.212893, 0.30231}), 9),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.342340123, 1, 0.23923}), 7),
+					sampling.NewSample(mat.NewVecDense(3, []float64{1, 0.2327485, 0.11192}), 1),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.6345, 0.00203}), 5),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.8112, 0.2301, 0.6748}), 8),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0.123891, 0.93812, 0.30128}), 4),
 				),
-			).To(BeTrue())
+			)
 		})
 	})
 	ginkgo.Context("batching", func() {
 		test.Spare("shouldn't straightly batch over empty samples", func() {
 			_ = sampling.NewSamples().Batch(1)
 		})
-		test.Spare("shouldn't batch test.With negative size", func() {
+		test.Spare("shouldn't batch with negative size", func() {
 			_ = sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.7593, 0.01028, 0.9117}), 0),
 			).Batch(-4)
 		})
-		test.Spare("shouldn't batch test.With zero size", func() {
+		test.Spare("shouldn't batch with zero size", func() {
 			_ = sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.89012, 0.999, 1}), 1),
 			).Batch(0)
@@ -502,10 +471,11 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.3902, 0.00023, 0.0045}), 1),
 			)
 			batch := samples.Batch(1)
-			Expect(batch.Length()).To(And(Equal(1), Equal(samples.Length())))
-			Expect(cmp.Equal(samples.Get(0), batch.Get(0))).To(BeTrue())
+			test.Equate(batch.Length(), 1)
+			test.Equate(batch.Length(), samples.Length())
+			test.Equate(samples.Get(0), batch.Get(0))
 		})
-		test.With("should batch test.With full size over multi-element samples", func() {
+		test.With("should batch with full size over multi-element samples", func() {
 			samples := sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.3902, 0.00023, 0.0045}), 1),
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.675483, 0.123, 0.75849}), 2),
@@ -514,13 +484,14 @@ var _ = ginkgo.Describe("samples", func() {
 			)
 			batch1 := samples.Batch(2)
 			batch2 := samples.Batch(2)
-			Expect(2).To(And(Equal(batch1.Length()), Equal(batch2.Length())))
-			Expect(cmp.Equal(batch1.Get(0), samples.Get(0))).To(BeTrue())
-			Expect(cmp.Equal(batch1.Get(1), samples.Get(1))).To(BeTrue())
-			Expect(cmp.Equal(batch2.Get(0), samples.Get(2))).To(BeTrue())
-			Expect(cmp.Equal(batch2.Get(1), samples.Get(3))).To(BeTrue())
+			test.Equate(batch1.Length(), 2)
+			test.Equate(batch2.Length(), 2)
+			test.Equate(batch1.Get(0), samples.Get(0))
+			test.Equate(batch1.Get(1), samples.Get(1))
+			test.Equate(batch2.Get(0), samples.Get(2))
+			test.Equate(batch2.Get(1), samples.Get(3))
 		})
-		test.With("should batch test.With partial size over multi-element samples", func() {
+		test.With("should batch with partial size over multi-element samples", func() {
 			samples := sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.675483, 0.123, 0.75849}), 2),
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.3902, 0.00023, 0.0045}), 1),
@@ -530,13 +501,13 @@ var _ = ginkgo.Describe("samples", func() {
 			)
 			batch1 := samples.Batch(3)
 			batch2 := samples.Batch(3)
-			Expect(batch1.Length()).To(Equal(3))
-			Expect(batch2.Length()).To(Equal(2))
-			Expect(cmp.Equal(batch1.Get(0), samples.Get(0))).To(BeTrue())
-			Expect(cmp.Equal(batch1.Get(1), samples.Get(1))).To(BeTrue())
-			Expect(cmp.Equal(batch1.Get(2), samples.Get(2))).To(BeTrue())
-			Expect(cmp.Equal(batch2.Get(0), samples.Get(3))).To(BeTrue())
-			Expect(cmp.Equal(batch2.Get(1), samples.Get(4))).To(BeTrue())
+			test.Equate(batch1.Length(), 3)
+			test.Equate(batch2.Length(), 2)
+			test.Equate(batch1.Get(0), samples.Get(0))
+			test.Equate(batch1.Get(1), samples.Get(1))
+			test.Equate(batch1.Get(2), samples.Get(2))
+			test.Equate(batch2.Get(0), samples.Get(3))
+			test.Equate(batch2.Get(1), samples.Get(4))
 		})
 		test.Spare("shouldn't batch more then once in a row", func() {
 			samples := sampling.NewSamples(
@@ -544,9 +515,9 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(3, []float64{0.239987, 0.00001, 0.9762}), 3),
 			)
 			batch := samples.Batch(2)
-			Expect(batch.Length()).To(Equal(2))
-			Expect(cmp.Equal(batch.Get(0), samples.Get(0))).To(BeTrue())
-			Expect(cmp.Equal(batch.Get(1), samples.Get(1))).To(BeTrue())
+			test.Equate(batch.Length(), 2)
+			test.Equate(batch.Get(0), samples.Get(0))
+			test.Equate(batch.Get(1), samples.Get(1))
 			_ = samples.Batch(2)
 		})
 		test.With("should distinct partially-iterated and fully-iterated samples", func() {
@@ -560,14 +531,14 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(3, nil), 5),
 				sampling.NewSample(mat.NewVecDense(3, nil), 0),
 			)
-			Expect(cmp.Equal(samples1, samples2)).To(BeTrue())
+			test.Equate(samples1, samples2)
 			for samples1.Next() {
 				_ = samples1.Batch(2)
-				Expect(cmp.Equal(samples1, samples2)).To(BeFalse())
+				test.Discern(samples1, samples2)
 			}
-			Expect(cmp.Equal(samples1, samples2)).To(BeTrue())
+			test.Equate(samples1, samples2)
 		})
-		test.With("should normally iterate test.With multiple batch size", func() {
+		test.With("should normally iterate with multiple batch size", func() {
 			samples := sampling.NewSamples(
 				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 0}), 0),
 				sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 1}), 1),
@@ -581,7 +552,7 @@ var _ = ginkgo.Describe("samples", func() {
 			for i := 0; samples.Next(); i++ {
 				batch := samples.Batch(3)
 				for j := 0; j < batch.Length(); j++ {
-					Expect(cmp.Equal(batch.Get(j), samples.Get(i*3+j))).To(BeTrue())
+					test.Equate(batch.Get(j), samples.Get(i*3+j))
 				}
 			}
 		})
@@ -593,13 +564,13 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(2, []float64{1, 1}), 3),
 			)
 			for samples.Next() {
-				Expect(samples.Batch(2).Length()).To(Equal(2))
+				test.Equate(samples.Batch(2).Length(), 2)
 			}
-			Expect(samples.Next()).To(BeTrue())
+			test.Equate(samples.Next(), true)
 			for samples.Next() {
-				Expect(samples.Batch(2).Length()).To(Equal(2))
+				test.Equate(samples.Batch(2).Length(), 2)
 			}
-			Expect(samples.Next()).To(BeTrue())
+			test.Equate(samples.Next(), true)
 		})
 	})
 	ginkgo.Context("scenarios", func() {
@@ -611,10 +582,10 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(2, []float64{0, 0}), 0),
 			)
 			left, right := samples.To(2), samples.From(2)
-			Expect(cmp.Equal(left.Get(0), samples.Get(0))).To(BeTrue())
-			Expect(cmp.Equal(left.Get(1), samples.Get(1))).To(BeTrue())
-			Expect(cmp.Equal(right.Get(0), samples.Get(2))).To(BeTrue())
-			Expect(cmp.Equal(right.Get(1), samples.Get(3))).To(BeTrue())
+			test.Equate(left.Get(0), samples.Get(0))
+			test.Equate(left.Get(1), samples.Get(1))
+			test.Equate(right.Get(0), samples.Get(2))
+			test.Equate(right.Get(1), samples.Get(3))
 		})
 		test.With("should adequately leverage slicing", func() {
 			samples := sampling.NewSamples(
@@ -629,18 +600,14 @@ var _ = ginkgo.Describe("samples", func() {
 				sampling.NewSample(mat.NewVecDense(3, []float64{21, 34, 55}), 9),
 				sampling.NewSample(mat.NewVecDense(3, []float64{34, 55, 89}), 5),
 			)
-			Expect(
-				cmp.Equal(
-					samples.From(2).To(7).To(6).To(2).From(1).Get(0),
-					sampling.NewSample(mat.NewVecDense(3, []float64{2, 3, 5}), 0),
-				),
-			).To(BeTrue())
-			Expect(
-				cmp.Equal(
-					samples.To(20).From(1).To(7).To(5).To(3).From(-3).To(2).From(3),
-					sampling.NewSamples(),
-				),
-			).To(BeTrue())
+			test.Equate(
+				samples.From(2).To(7).To(6).To(2).From(1).Get(0),
+				sampling.NewSample(mat.NewVecDense(3, []float64{2, 3, 5}), 0),
+			)
+			test.Equate(
+				samples.To(20).From(1).To(7).To(5).To(3).From(-3).To(2).From(3),
+				sampling.NewSamples(),
+			)
 		})
 	})
 })
