@@ -628,9 +628,11 @@ var _ = Describe("samples", func() {
 			for samples.Next() {
 				Expect(samples.Batch(2).Length()).To(Equal(2))
 			}
+			Expect(samples.Next()).To(BeTrue())
 			for samples.Next() {
 				Expect(samples.Batch(2).Length()).To(Equal(2))
 			}
+			Expect(samples.Next()).To(BeTrue())
 		})
 	})
 	Context("scenarios", func() {})
