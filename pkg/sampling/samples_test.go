@@ -4,6 +4,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/sampling"
+	"math/rand"
 )
 
 var _ = Describe("samples", func() {
@@ -492,6 +493,7 @@ var _ = Describe("samples", func() {
 			).To(BeTrue())
 		})
 		With("should yield different multi-element samples", func() {
+			rand.Seed(42)
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -515,8 +517,48 @@ var _ = Describe("samples", func() {
 		})
 	})
 	Context("batching", func() {
-		//It("shouldn't equate iterating and non-iterating samples", func() {})
-		//It("should equate already-iterated and non-iterated samples", func() {})
+		Spare("shouldn't straightly batch over empty samples", func() {
+			_ = sampling.NewSamples().Batch(1)
+		})
+		Spare("shouldn't batch with negative size", func() {
+			_ = sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.7593, 0.01028, 0.9117}), 0),
+			).Batch(-4)
+		})
+		Spare("shouldn't batch with zero size", func() {
+			_ = sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.89012, 0.999, 1}), 1),
+			).Batch(0)
+		})
+		With("should batch single-element samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.3902, 0.00023, 0.0045}), 1),
+			)
+			batch := samples.Batch(1)
+			Expect(batch.Length()).To(And(Equal(1), Equal(samples.Length())))
+			Expect(cmp.Equal(samples.Get(0), batch.Get(0))).To(BeTrue())
+		})
+		With("should batch with full size over multi-element samples", func() {
+			samples := sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.3902, 0.00023, 0.0045}), 1),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.675483, 0.123, 0.75849}), 2),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.878685, 0.00123, 1}), 3),
+				sampling.NewSample(mat.NewVecDense(3, []float64{0.444563, 0.1123, 0.90134}), 4),
+			)
+			batch1 := samples.Batch(2)
+			batch2 := samples.Batch(2)
+			Expect(2).To(And(Equal(batch1.Length()), Equal(batch2.Length())))
+			Expect(batch1.Get(0)).To(Equal(samples.Get(0)))
+			Expect(batch1.Get(1)).To(Equal(samples.Get(1)))
+			Expect(batch2.Get(0)).To(Equal(samples.Get(2)))
+			Expect(batch2.Get(1)).To(Equal(samples.Get(3)))
+		})
+		//With("should batch with partial size over multi-element samples", func() {})
+		//Spare("shouldn't batch more then once in a row", func() {})
+		//With("should equate already-iterated and non-iterated samples", func() {})
+		//With("shouldn't equate partially-iterated and non-iterated samples", func() {})
+		//With("should normally iterate with multiple batch size", func() {})
+		//With("should normally reiterate over the same samples", func() {})
 	})
 	Context("scenarios", func() {})
 })
