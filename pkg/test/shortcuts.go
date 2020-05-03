@@ -25,10 +25,6 @@ func Spare(text string, body func()) {
 }
 
 func Equate(actual interface{}, expected interface{}) {
-	gomega.Expect(actual).To(gomega.Equal(expected))
-}
-
-func Comply(actual interface{}, expected interface{}) {
 	gomega.Expect(cmp.Equal(actual, expected)).To(gomega.BeTrue())
 }
 
