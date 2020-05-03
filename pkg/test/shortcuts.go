@@ -6,6 +6,11 @@ import (
 	"github.com/onsi/gomega"
 )
 
+// A shortcut for ginkgo/gomega DSL to execute specs in a panic-safe
+// manner. Personally this function guarantees that the specified
+// goroutine won't pass a panic to the higher level of ginkgo.
+// Potential panic would be caught and asserted at the defer block.
+// Obviously, panic's presence would cause ginkgo's tear down.
 func With(text string, body func()) {
 	ginkgo.It(text, func() {
 		defer func() {
@@ -15,6 +20,9 @@ func With(text string, body func()) {
 	})
 }
 
+// A shortcut for ginkgo/gomega DSL to execute specs in a panic-safe
+// manner. Personally this function expects a panic to occur. It's
+// useful for specs specified to reproduce erroneous situations.
 func Spare(text string, body func()) {
 	ginkgo.It(text, func() {
 		defer func() {
@@ -24,6 +32,9 @@ func Spare(text string, body func()) {
 	})
 }
 
+// Universal equality assertion expecting arguments to equal each
+// other. It differs from the standard gomega's function
+// https://pkg.go.dev/github.com/onsi/gomega?tab=doc#Equal
 func Equate(actual interface{}, expected interface{}) {
 	gomega.Expect(cmp.Equal(actual, expected)).To(gomega.BeTrue())
 }
