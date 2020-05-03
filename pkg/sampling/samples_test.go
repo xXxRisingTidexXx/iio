@@ -233,7 +233,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("to (-inf; 0] on multiple-element samples", func() {
+		With("to (-inf; 0] on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -245,7 +245,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("to 1 on multiple-element samples", func() {
+		With("to 1 on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -259,7 +259,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("to [2; len - 1] on multiple-element samples", func() {
+		With("to [2; len - 1] on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -275,7 +275,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("to len on multiple-element samples", func() {
+		With("to len on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -293,7 +293,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("to [len + 1; +inf) on multiple-element samples", func() {
+		With("to [len + 1; +inf) on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -309,7 +309,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("from (-inf; -1] on multiple-element samples", func() {
+		With("from (-inf; -1] on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -325,7 +325,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("from 0 on multiple-element samples", func() {
+		With("from 0 on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -341,7 +341,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("from [1; len - 2] on multiple-element samples", func() {
+		With("from [1; len - 2] on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -357,7 +357,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("from len - 1 on multiple-element samples", func() {
+		With("from len - 1 on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -372,7 +372,7 @@ var _ = Describe("samples", func() {
 				),
 			).To(BeTrue())
 		})
-		With("from [len; +inf) on multiple-element samples", func() {
+		With("from [len; +inf) on multi-element samples", func() {
 			Expect(
 				cmp.Equal(
 					sampling.NewSamples(
@@ -385,7 +385,80 @@ var _ = Describe("samples", func() {
 			).To(BeTrue())
 		})
 	})
-	Context("indexing", func() {})
+	Context("indexing", func() {
+		Spare("should fail in empty collection `cause of negative index", func() {
+			_ = sampling.NewSamples().Get(-2)
+		})
+		Spare("should fail in empty collection `cause of zero index", func() {
+			_ = sampling.NewSamples().Get(0)
+		})
+		Spare("should fail in empty collection `cause of positive index", func() {
+			_ = sampling.NewSamples().Get(20)
+		})
+		Spare("should fail in single-element collection `cause of negative index", func() {
+			_ = sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2)).Get(-30)
+		})
+		With("should yield in multi-element collection the single element", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2)).Get(0),
+					sampling.NewSample(mat.NewVecDense(3, []float64{0, 0.5, 0.1}), 2),
+				),
+			).To(BeTrue())
+		})
+		Spare("should fail in single-element collection `cause of positive index", func() {
+			_ = sampling.NewSamples(sampling.NewSample(mat.NewVecDense(3, []float64{0, 0, 0.9}), 4)).Get(6)
+		})
+		Spare("should fail in multi-element collection `cause of negative index", func() {
+			_ = sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(4, []float64{0, 0.0002, 0.9, 0.107}), 7),
+				sampling.NewSample(mat.NewVecDense(4, []float64{0.8, 0.2, 0.12, 0.7}), 6),
+			).Get(-3)
+		})
+		With("should yield in multi-element collection the first element", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.782, 0.2, 0.1, 0}), 2),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.6154, 0.8788, 0, 0}), 5),
+						sampling.NewSample(mat.NewVecDense(4, nil), 0),
+					).Get(0),
+					sampling.NewSample(mat.NewVecDense(4, []float64{0.782, 0.2, 0.1, 0}), 2),
+				),
+			).To(BeTrue())
+		})
+		With("should yield in multi-element collection a middle element", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.52, 0.2, 0.1, 0}), 2),
+						sampling.NewSample(mat.NewVecDense(4, nil), 0),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0, 0, 0, 0.87}), 3),
+					).Get(1),
+					sampling.NewSample(mat.NewVecDense(4, []float64{0, 0, 0, 0}), 0),
+				),
+			).To(BeTrue())
+		})
+		With("should yield in multi-element collection the last element", func() {
+			Expect(
+				cmp.Equal(
+					sampling.NewSamples(
+						sampling.NewSample(mat.NewVecDense(4, nil), 0),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.2, 0, 0.1, 0}), 2),
+						sampling.NewSample(mat.NewVecDense(4, []float64{0.52, 0.2, 0.1, 0}), 2),
+						sampling.NewSample(mat.NewVecDense(4, []float64{1, 0, 1, 0.754}), 3),
+					).Get(3),
+					sampling.NewSample(mat.NewVecDense(4, []float64{1, 0, 1, 0.754}), 3),
+				),
+			).To(BeTrue())
+		})
+		Spare("should fail in multi-element collection `cause of too large index", func() {
+			_ = sampling.NewSamples(
+				sampling.NewSample(mat.NewVecDense(4, []float64{0.8, 0.2, 0.12, 0.7}), 6),
+				sampling.NewSample(mat.NewVecDense(4, []float64{0, 0.0002, 0.9, 0.107}), 7),
+			).Get(109)
+		})
+	})
 	Context("shuffling", func() {})
 	Context("batching", func() {
 		//It("shouldn't equate iterating and non-iterating samples", func() {})
