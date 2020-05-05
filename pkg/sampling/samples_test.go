@@ -618,7 +618,8 @@ var _ = ginkgo.Describe("samples", func() {
 	})
 	ginkgo.Context("benchmarking", func() {
 		ginkgo.Context("shuffling", func() {
-			_ := func(length, size, repeats int) {
+			measure := func(length, size, repeats int) {
+				samples := random.NewSamples(length, size, 0, 1, 0, 10)
 				ginkgo.Measure(
 					fmt.Sprintf(
 						"measure mix of samples of length %d (each item of size %d) %d times",
@@ -628,46 +629,30 @@ var _ = ginkgo.Describe("samples", func() {
 					),
 					func(benchmarker ginkgo.Benchmarker) {
 						rand.Seed(time.Now().UnixNano())
-						samples := random.NewSamples(length, size, 0, 1, 0, 10)
-						benchmarker.Time("runtime", func() {
+						memoryUsage := uint64(0)
+						runtime := benchmarker.Time("runtime", func() {
 							var memStats runtime.MemStats
 							runtime.ReadMemStats(&memStats)
-							memoryUsage := float64(memStats.TotalAlloc)
+							memoryUsage = memStats.TotalAlloc
 							_ = samples.Shuffle()
 							runtime.ReadMemStats(&memStats)
-							benchmarker.RecordValue(
-								"memory usage (in kib)",
-								(float64(memStats.TotalAlloc)-memoryUsage)/(1<<10),
-							)
+							memoryUsage = memStats.TotalAlloc - memoryUsage
 						})
+						benchmarker.RecordValue("runtime (in ms)", float64(runtime.Microseconds())/1000)
+						benchmarker.RecordValue("memory usage (in kib)", float64(memoryUsage)/(1<<10))
 					},
 					repeats,
 				)
 			}
 			ginkgo.Context("tiny samples", func() {
-				ginkgo.Context("tiny activations", func() {})
-				ginkgo.Context("small activations", func() {})
-				ginkgo.Context("medium activations", func() {})
-				ginkgo.Context("large activations", func() {})
+				measure(100, 1000, 800)
+				measure(100, 10000, 400)
+				measure(100, 100000, 200)
+				measure(100, 1000000, 100)
 			})
-			ginkgo.Context("small samples", func() {
-				ginkgo.Context("tiny activations", func() {})
-				ginkgo.Context("small activations", func() {})
-				ginkgo.Context("medium activations", func() {})
-				ginkgo.Context("large activations", func() {})
-			})
-			ginkgo.Context("medium samples", func() {
-				ginkgo.Context("tiny activations", func() {})
-				ginkgo.Context("small activations", func() {})
-				ginkgo.Context("medium activations", func() {})
-				ginkgo.Context("large activations", func() {})
-			})
-			ginkgo.Context("large samples", func() {
-				ginkgo.Context("tiny activations", func() {})
-				ginkgo.Context("small activations", func() {})
-				ginkgo.Context("medium activations", func() {})
-				ginkgo.Context("large activations", func() {})
-			})
+			ginkgo.Context("small samples", func() {})
+			ginkgo.Context("medium samples", func() {})
+			ginkgo.Context("large samples", func() {})
 		})
 		ginkgo.Context("batching", func() {})
 	})
