@@ -644,15 +644,10 @@ var _ = ginkgo.Describe("samples", func() {
 					repeats,
 				)
 			}
-			ginkgo.Context("tiny samples", func() {
-				measure(100, 1000, 800)
-				measure(100, 10000, 400)
-				measure(100, 100000, 200)
-				measure(100, 1000000, 100)
-			})
-			ginkgo.Context("small samples", func() {})
-			ginkgo.Context("medium samples", func() {})
-			ginkgo.Context("large samples", func() {})
+			measure(100, 1000, 400)
+			measure(1000, 1000, 200)
+			measure(10000, 1000, 100)
+			measure(100000, 1000, 50)
 		})
 		ginkgo.Context("batching", func() {})
 	})
