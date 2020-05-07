@@ -21,6 +21,3 @@ commands:
   fulltest:
     description: Run all test suites including benchmarks
     cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -nodes 4 -timeout 5m
-  citest:
-    description: Run test suites just like on CI
-    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --progress -skipMeasurements -timeout 1m
