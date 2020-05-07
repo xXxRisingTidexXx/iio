@@ -2,6 +2,7 @@ package loading
 
 import (
 	"fmt"
+	"gonum.org/v1/gonum/mat"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -71,8 +72,15 @@ func (loader *MNISTLoader) Batch(size int) []*Sample {
 	if difference := loader.length - loader.position; difference < size {
 		size = difference
 	}
-
+	images, labels := loader.readIDX(size)
 	batch := make([]*Sample, size)
+	for i := 0; i < size; i++ {
+		image := make([]float64, loader.imageExtent)
+		for j := 0; j < loader.imageExtent; j++ {
+			image[j] = float64(images[i][j]) / 255
+		}
+		batch[i] = NewSample(mat.NewVecDense(loader.imageExtent, image), int(labels[i][0]))
+	}
 	loader.position += size
 	return batch
 }
