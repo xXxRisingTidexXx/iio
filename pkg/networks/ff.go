@@ -27,7 +27,7 @@ func (network *FFNetwork) Train() {
 			for _, sample := range batch {
 				go network.train(sample, deltasChannel)
 			}
-			learningRate := network.learningRate / float64(length)
+			learningRate := -network.learningRate / float64(length)
 			for deltas := range deltasChannel {
 				for i, layer := range network.layers {
 					layer.Update(learningRate, deltas[i])
@@ -47,9 +47,13 @@ func (network *FFNetwork) train(sample *loading.Sample, deltasChannel chan<- []*
 	nodes := make([]mat.Vector, length)
 	nodes[length-1] = network.layers[length-1].ProduceNodes(
 		network.costFunction.Differentiate(activations[length], sample.Label()),
+		activations[length],
 	)
 	for i := length - 2; i >= 0; i-- {
-		nodes[i] = network.layers[i].ProduceNodes(network.layers[i+1].BackPropagate(nodes[i+1]))
+		nodes[i] = network.layers[i].ProduceNodes(
+			network.layers[i+1].BackPropagate(nodes[i+1]),
+			activations[i+1],
+		)
 		// Add here deltas calculation
 	}
 	deltasChannel <- []*guts.Delta{}
