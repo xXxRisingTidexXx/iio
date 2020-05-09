@@ -8,6 +8,9 @@ import (
 type SigmoidNeuron struct{}
 
 func (neuron *SigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
+	if input == nil {
+		panic("guts: sigmoid got nil vector")
+	}
 	return neuron.apply(
 		input,
 		func(i int, value float64) float64 {
@@ -26,6 +29,9 @@ func (neuron *SigmoidNeuron) apply(input mat.Vector, applier func(int, float64) 
 }
 
 func (neuron *SigmoidNeuron) Differentiate(input mat.Vector) mat.Vector {
+	if input == nil {
+		panic("guts: sigmoid got nil vector")
+	}
 	return neuron.apply(
 		input,
 		func(i int, value float64) float64 {
