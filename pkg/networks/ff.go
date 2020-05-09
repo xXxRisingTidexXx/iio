@@ -2,8 +2,7 @@ package networks
 
 import (
 	"gonum.org/v1/gonum/mat"
-	"iio/pkg/networks/guts"
-	"iio/pkg/sampling"
+	"iio/pkg/guts"
 	"sync"
 )
 
