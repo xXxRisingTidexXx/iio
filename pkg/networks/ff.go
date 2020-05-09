@@ -46,7 +46,7 @@ func (network *FFNetwork) train(sample *loading.Sample, deltasChannel chan<- []*
 	}
 	nodes := make([]mat.Vector, length)
 	nodes[length-1] = network.layers[length-1].ProduceNodes(
-		network.costFunction.Evaluate(activations[length], sample.Label()),
+		network.costFunction.Differentiate(activations[length], sample.Label()),
 	)
 	for i := length - 2; i >= 0; i-- {
 		nodes[i] = network.layers[i].ProduceNodes(network.layers[i+1].BackPropagate(nodes[i+1]))

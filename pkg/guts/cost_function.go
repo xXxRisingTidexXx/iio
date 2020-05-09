@@ -5,5 +5,6 @@ import (
 )
 
 type CostFunction interface {
-	Evaluate(mat.Vector, int) mat.Vector
+	Evaluate(mat.Vector) int
+	Differentiate(mat.Vector, int) mat.Vector
 }
