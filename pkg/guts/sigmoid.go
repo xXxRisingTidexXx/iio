@@ -19,21 +19,21 @@ func (neuron *SigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
 	)
 }
 
-func (neuron *SigmoidNeuron) apply(input mat.Vector, applier func(int, float64) float64) mat.Vector {
-	length := input.Len()
+func (neuron *SigmoidNeuron) apply(vector mat.Vector, applier func(int, float64) float64) mat.Vector {
+	length := vector.Len()
 	output := mat.NewVecDense(length, nil)
 	for i := 0; i < length; i++ {
-		output.SetVec(i, applier(i, input.AtVec(i)))
+		output.SetVec(i, applier(i, vector.AtVec(i)))
 	}
 	return output
 }
 
-func (neuron *SigmoidNeuron) Differentiate(input mat.Vector) mat.Vector {
-	if input == nil {
+func (neuron *SigmoidNeuron) Differentiate(output mat.Vector) mat.Vector {
+	if output == nil {
 		panic("guts: sigmoid got nil vector")
 	}
 	return neuron.apply(
-		input,
+		output,
 		func(i int, value float64) float64 {
 			return value * (1 - value)
 		},
