@@ -29,7 +29,7 @@ func (network *FFNetwork) Train() {
 			}
 			for deltas := range deltasChannel {
 				for i, layer := range network.layers {
-					layer.Update(-network.learningRate/float64(length), deltas[i])
+					layer.Update(network.learningRate/float64(length), deltas[i])
 				}
 			}
 		}
