@@ -2,7 +2,7 @@ package loading
 
 import (
 	"fmt"
-	"gonum.org/v1/gonum/mat"
+	"github.com/james-bowman/sparse"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -75,11 +75,20 @@ func (loader *MNISTLoader) Batch(size int) []*Sample {
 	images, labels := loader.readIDX(size)
 	batch := make([]*Sample, size)
 	for i := 0; i < size; i++ {
-		image := make([]float64, loader.imageExtent)
+		nonZeroCount := 0
 		for j := 0; j < loader.imageExtent; j++ {
-			image[j] = float64(images[i][j]) / 255
+			if images[i][j] != 0 {
+				nonZeroCount++
+			}
 		}
-		batch[i] = NewSample(mat.NewVecDense(loader.imageExtent, image), int(labels[i][0]))
+		indices, data := make([]int, nonZeroCount), make([]float64, nonZeroCount)
+		for j, k := 0, 0; j < loader.imageExtent; j++ {
+			if images[i][j] != 0 {
+				indices[k], data[k] = j, float64(images[i][j])/255
+				k++
+			}
+		}
+		batch[i] = NewSample(sparse.NewVector(loader.imageExtent, indices, data), int(labels[i][0]))
 	}
 	loader.position += size
 	return batch
