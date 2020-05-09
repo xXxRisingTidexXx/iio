@@ -27,7 +27,7 @@ func (network *FFNetwork) Train() {
 			for _, sample := range batch {
 				go network.train(sample, deltasChannel)
 			}
-			learningRate := network.learningRate/float64(length)
+			learningRate := network.learningRate / float64(length)
 			for deltas := range deltasChannel {
 				for i, layer := range network.layers {
 					layer.Update(learningRate, deltas[i])
