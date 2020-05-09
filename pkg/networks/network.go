@@ -6,6 +6,6 @@ import (
 
 type Network interface {
 	Train()
-	Test() Report
+	Test() *Report
 	Evaluate(mat.Vector) int
 }

@@ -1,6 +1,7 @@
 package networks
 
 import (
+	"fmt"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/guts"
 	"iio/pkg/loading"
@@ -53,7 +54,23 @@ func (network *FFNetwork) train(sample *loading.Sample, deltasChannel chan<- []*
 	deltasChannel <- []*guts.Delta{}
 }
 
-func (network *FFNetwork) Test() Report {
+func (network *FFNetwork) Test() *Report {
+	network.testLoader.Shuffle()
+	for network.testLoader.Next() {
+		batch := network.testLoader.Batch(network.batchSize)
+		resultChannel := make(chan *result, len(batch))
+		for _, sample := range batch {
+			go network.test(sample, resultChannel)
+		}
+		for result := range resultChannel {
+			fmt.Println(result)
+			// Do some logic with results and report
+		}
+	}
+	return &Report{}
+}
+
+func (network *FFNetwork) test(sample *loading.Sample, resultChannel chan<- *result) {
 	panic("implement me")
 }
 
