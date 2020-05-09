@@ -3,74 +3,60 @@ package networks
 import (
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/guts"
-	"sync"
+	"iio/pkg/loading"
 )
 
 type FFNetwork struct {
-	epochs       int
-	batchSize    int
-	learningRate float64
-	layers       *guts.Layers
-	costFunction guts.CostFunction
+	layers         []guts.Layer
+	costFunction   guts.CostFunction
+	trainingLoader loading.Loader
+	testLoader     loading.Loader
+	epochs         int
+	batchSize      int
+	learningRate   float64
 }
 
-func (network *FFNetwork) Train(samples *sampling.Samples) {
+func (network *FFNetwork) Train() {
 	for epoch := 0; epoch < network.epochs; epoch++ {
-		newSamples := samples.Shuffle()
-		for newSamples.Next() {
-			batch := newSamples.Batch(network.batchSize)
-			length := batch.Length()
-			waitGroup := &sync.WaitGroup{}
-			waitGroup.Add(length)
-			deltasChannel := make(chan *guts.Deltas, length)
-			for i := 0; i < length; i++ {
-				go network.train(batch.Get(i), waitGroup, deltasChannel)
+		network.trainingLoader.Shuffle()
+		for network.trainingLoader.Next() {
+			batch := network.trainingLoader.Batch(network.batchSize)
+			length := len(batch)
+			deltasChannel := make(chan []*guts.Delta, length)
+			for _, sample := range batch {
+				go network.train(sample, deltasChannel)
 			}
-			waitGroup.Wait()
-			totalDeltas := guts.NewDeltas(nil, nil)
 			for deltas := range deltasChannel {
-				totalDeltas = totalDeltas.Add(deltas)
-			}
-			totalDeltas = totalDeltas.Scale(-network.learningRate / float64(length))
-			for i := 0; i < network.layers.Length(); i++ {
-				network.layers.Get(i).Update(totalDeltas.Get(i))
+				for i, layer := range network.layers {
+					layer.Update(-network.learningRate/float64(length), deltas[i])
+				}
 			}
 		}
 	}
 }
 
-func (network *FFNetwork) train(
-	sample *sampling.Sample,
-	waitGroup *sync.WaitGroup,
-	deltasChannel chan<- *guts.Deltas,
-) {
-	defer waitGroup.Done()
-	length := network.layers.Length()
+func (network *FFNetwork) train(sample *loading.Sample, deltasChannel chan<- []*guts.Delta) {
+	length := len(network.layers)
 	activations := make([]mat.Vector, length+1)
-	activations[0] = sample.Activations()
-	for i := 0; i < length; i++ {
-		activations[i+1] = network.layers.Get(i).FeedForward(activations[i])
+	activations[0] = sample.Data()
+	for i, layer := range network.layers {
+		activations[i+1] = layer.FeedForward(activations[i])
 	}
 	nodes := make([]mat.Vector, length)
-	nodes[length-1] = network.layers.Last().ProduceNodes(
+	nodes[length-1] = network.layers[length-1].ProduceNodes(
 		network.costFunction.Evaluate(activations[length], sample.Label()),
 	)
 	for i := length - 2; i >= 0; i-- {
-		nodes[i] = network.layers.Get(i).ProduceNodes(
-			network.layers.Get(i + 1).BackPropagate(nodes[i+1]),
-		)
+		nodes[i] = network.layers[i].ProduceNodes(network.layers[i+1].BackPropagate(nodes[i+1]))
+		// Add here deltas calculation
 	}
-	deltasChannel <- guts.NewDeltas(nodes, activations)
+	deltasChannel <- []*guts.Delta{}
 }
 
-func (network *FFNetwork) Validate(samples *sampling.Samples) {
+func (network *FFNetwork) Test() Report {
 	panic("implement me")
 }
 
-func (network *FFNetwork) Test(samples *sampling.Samples) Report {
-	panic("implement me")
-}
-
-func (network *FFNetwork) Evaluate(activations mat.Vector) int {
+func (network *FFNetwork) Evaluate(input mat.Vector) int {
 	panic("implement me")
 }

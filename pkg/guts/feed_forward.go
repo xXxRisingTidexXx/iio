@@ -22,6 +22,6 @@ func (layer *FeedForwardLayer) BackPropagate(nodes mat.Vector) mat.Vector {
 	panic("implement me")
 }
 
-func (layer *FeedForwardLayer) Update(delta *Delta) {
+func (layer *FeedForwardLayer) Update(learningRate float64, delta *Delta) {
 	panic("implement me")
 }
