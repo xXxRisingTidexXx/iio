@@ -44,19 +44,16 @@ func (network *FFNetwork) train(sample *loading.Sample, deltasChannel chan<- []*
 	for i, layer := range network.layers {
 		activations[i+1] = layer.FeedForward(activations[i])
 	}
-	nodes := make([]mat.Vector, length)
-	nodes[length-1] = network.layers[length-1].ProduceNodes(
-		network.costFunction.Differentiate(activations[length], sample.Label()),
-		activations[length],
-	)
-	for i := length - 2; i >= 0; i-- {
-		nodes[i] = network.layers[i].ProduceNodes(
-			network.layers[i+1].BackPropagate(nodes[i+1]),
-			activations[i+1],
-		)
-		// Add here deltas calculation
+	deltas := make([]*guts.Delta, length)
+	diffs := network.costFunction.Differentiate(activations[length], sample.Label())
+	for i := length - 1; i >= 0; i-- {
+		nodes := network.layers[i].ProduceNodes(diffs, activations[i+1])
+		deltas[i] = guts.NewDelta(nodes, activations[i])
+		if i > 0 {
+			diffs = network.layers[i].BackPropagate(nodes)
+		}
 	}
-	deltasChannel <- []*guts.Delta{}
+	deltasChannel <- deltas
 }
 
 func (network *FFNetwork) Test() *Report {
