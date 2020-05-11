@@ -1,18 +1,20 @@
 package guts
 
 type Layers struct {
-	items  []Layers
-	length int
+	items []Layer
 }
 
+// Returns the length of the layer
 func (layers *Layers) Length() int {
-	panic("implement me")
+	return len(layers.items)
 }
 
+// Returns the layer level at the specified index
 func (layers *Layers) Get(i int) Layer {
-	panic("implement me")
+	return layers.items[i]
 }
 
+// Returns the last layer level
 func (layers *Layers) Last() Layer {
-	panic("implement me")
+	return layers.items[layers.Length() - 1]
 }
