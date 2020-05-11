@@ -1,4 +1,4 @@
-package layers
+package layered
 
 import (
 	"gonum.org/v1/gonum/mat"
