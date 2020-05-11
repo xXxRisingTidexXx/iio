@@ -20,12 +20,8 @@ func (layer *FeedForwardLayer) FeedForward(activations mat.Vector) mat.Vector {
 
 // Forms a node level
 func (layer *FeedForwardLayer) ProduceNodes(diffs, activations mat.Vector) mat.Vector {
-	row, _ := layer.weights.Dims()
-	z := mat.NewVecDense(row, nil)
-	resultDelta := mat.NewVecDense(row, nil)
-	z.MulVec(layer.weights, activations)
-	z.AddVec(z, layer.biases)
-	resultDelta.MulElemVec(diffs, layer.neuron.Differentiate(z))
+	resultDelta := mat.NewVecDense(diffs.Len(), nil)
+	resultDelta.MulElemVec(diffs, layer.neuron.Differentiate(activations))
 	return resultDelta
 }
 
