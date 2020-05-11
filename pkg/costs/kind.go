@@ -1,4 +1,4 @@
-package loss
+package costs
 
 type Kind int
 

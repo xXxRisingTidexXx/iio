@@ -1,4 +1,4 @@
-package loss
+package costs
 
 import (
 	"gonum.org/v1/gonum/mat"
