@@ -5,7 +5,7 @@ import (
 	"iio/pkg/neurons"
 )
 
-func NewBasicLayer(kind neurons.Kind, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
+func NewBasicLayer(kind Kind, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
 	if weights == nil || biases == nil {
 		panic("layers: basic layer got nil vector(s)")
 	}

@@ -1,4 +1,4 @@
-package neurons
+package layers
 
 type Kind int
 
