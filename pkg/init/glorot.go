@@ -6,6 +6,10 @@ import (
 	"math/rand"
 )
 
+func NewGlorotInitializer() *GlorotInitializer {
+	return &GlorotInitializer{}
+}
+
 type GlorotInitializer struct{}
 
 func (initializer *GlorotInitializer) InitializeMatrix(rows, columns int) *mat.Dense {

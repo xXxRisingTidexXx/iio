@@ -4,6 +4,10 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+func NewZeroInitializer() *ZeroInitializer {
+	return &ZeroInitializer{}
+}
+
 type ZeroInitializer struct{}
 
 func (initializer *ZeroInitializer) InitializeMatrix(rows, columns int) *mat.Dense {
