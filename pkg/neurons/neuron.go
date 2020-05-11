@@ -6,6 +6,8 @@ import (
 
 func NewNeuron(kind Kind) Neuron {
 	switch kind {
+	case Input:
+		panic("neurons: can't instantiate input neuron")
 	case Sigmoid:
 		return &SigmoidNeuron{}
 	default:
