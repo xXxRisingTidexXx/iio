@@ -20,14 +20,6 @@ func NewDelta(nodes, activations mat.Vector) *Delta {
 }
 
 type Delta struct {
-	weights mat.Matrix
-	biases  mat.Vector
-}
-
-func (delta *Delta) Weights() mat.Matrix {
-	return delta.weights
-}
-
-func (delta *Delta) Biases() mat.Vector {
-	return delta.biases
+	Weights mat.Matrix
+	Biases  mat.Vector
 }

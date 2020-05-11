@@ -55,8 +55,8 @@ func (layer *BasicLayer) Update(learningRate float64, delta *Delta) {
 	rows, columns := layer.weights.Dims()
 	for i := 0; i < rows; i++ {
 		for j := 0; j < columns; j++ {
-			layer.weights.Set(i, j, layer.weights.At(i, j)+learningRate*delta.Weights().At(i, j))
+			layer.weights.Set(i, j, layer.weights.At(i, j)+learningRate*delta.Weights.At(i, j))
 		}
 	}
-	layer.biases.AddScaledVec(layer.biases, learningRate, delta.Biases())
+	layer.biases.AddScaledVec(layer.biases, learningRate, delta.Biases)
 }
