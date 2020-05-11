@@ -48,13 +48,13 @@ func (network *FFNetwork) train(
 	defer waitGroup.Done()
 	length := network.layers.Length()
 	activations := make([]mat.Vector, length+1)
-	activations[0] = sample.Activations
+	activations[0] = sample.Activations()
 	for i := 0; i < length; i++ {
 		activations[i+1] = network.layers.Get(i).FeedForward(activations[i])
 	}
 	nodes := make([]mat.Vector, length)
 	nodes[length-1] = network.layers.Last().ProduceNodes(
-		network.costFunction.Evaluate(activations[length], sample.Label),
+		network.costFunction.Evaluate(activations[length], sample.Label()),
 		activations[length-1],
 	)
 	for i := length - 2; i >= 0; i-- {

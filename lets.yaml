@@ -5,16 +5,19 @@ commands:
     cmd: go get -t -u all && go get -u github.com/onsi/ginkgo/ginkgo
   compile:
     description: Compiles the whole project and runs it
-    cmd: go build -o bin/iio cmd/main.go
+    cmd: go build -o iio cmd/main.go
   run:
     description: Executes the binary
-    cmd: bin/iio
+    cmd: ./iio
   format:
     description: Prettify the source code
     cmd: gofmt -w -s .
   lint:
     description: Lint the source
     cmd: golangci-lint run
-  test:
-    description: Run test suites
-    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -nodes 4
+  unittest:
+    description: Run just unit test cases
+    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -skipMeasurements -timeout 1m
+  fulltest:
+    description: Run all test suites including benchmarks
+    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -nodes 4 -timeout 5m

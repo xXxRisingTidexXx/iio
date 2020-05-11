@@ -9,11 +9,10 @@ import (
 	"iio/pkg/sampling"
 	"io/ioutil"
 	"net/http"
-	"sync"
 	"time"
 )
 
-func NewMNISTLoader() Loader {
+func NewMNISTLoader() *MNISTLoader {
 	return &MNISTLoader{&http.Client{Timeout: 10 * time.Second}, 0.9}
 }
 
@@ -26,118 +25,39 @@ func NewMNISTLoader() Loader {
 // respectively. All files are represented by IDX format which is
 // very suitable for ND-array transfer.
 type MNISTLoader struct {
-	client       *http.Client
+	// HTTP request maker, powered by timeout magic.
+	client *http.Client
+
+	// A number from (0; 1) indicating relative size of the training
+	// images concernedly MNIST overall training set. Used to split
+	// this selection into training and validation sets.
 	trainingSize float64
 }
 
-func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples, error) {
-	waitGroup := &sync.WaitGroup{}
-	waitGroup.Add(4)
+// Concurrently reads 4 .gz archives, unpacks them, parses and finally
+// builds 3 output sample sets. MNIST overall training set should be
+// divided to define validation images as well.
+func (loader *MNISTLoader) Load() (*sampling.Samples, *sampling.Samples, *sampling.Samples) {
 	trainingImageChannel := make(chan []mat.Vector, 1)
 	trainingLabelChannel := make(chan []int, 1)
 	testImageChannel := make(chan []mat.Vector, 1)
 	testLabelChannel := make(chan []int, 1)
-	errChannel := make(chan error, 4)
-	go loader.loadImages("train-images-idx3-ubyte", waitGroup, trainingImageChannel, errChannel)
-	go loader.loadLabels("train-labels-idx1-ubyte", waitGroup, trainingLabelChannel, errChannel)
-	go loader.loadImages("t10k-images-idx3-ubyte", waitGroup, testImageChannel, errChannel)
-	go loader.loadLabels("t10k-labels-idx1-ubyte", waitGroup, testLabelChannel, errChannel)
-	waitGroup.Wait()
-	select {
-	case err := <-errChannel:
-		return nil, nil, nil, err
-	default:
-		testLabels, trainingLabels := <-testLabelChannel, <-trainingLabelChannel
-		testImages, trainingImages := <-testImageChannel, <-trainingImageChannel
-		if err := checkLengths(trainingImages, trainingLabels); err != nil {
-			return nil, nil, nil, err
-		}
-		if err := checkLengths(testImages, testLabels); err != nil {
-			return nil, nil, nil, err
-		}
-		overallSet := makeSamples(trainingImages, trainingLabels)
-		trainingIndex := int(loader.trainingSize * float64(overallSet.Length()))
-		return overallSet.To(trainingIndex),
-			overallSet.From(trainingIndex),
-			makeSamples(testImages, testLabels),
-			nil
-	}
+	go loader.loadImages("train-images-idx3-ubyte", trainingImageChannel)
+	go loader.loadLabels("train-labels-idx1-ubyte", trainingLabelChannel)
+	go loader.loadImages("t10k-images-idx3-ubyte", testImageChannel)
+	go loader.loadLabels("t10k-labels-idx1-ubyte", testLabelChannel)
+	testLabels, trainingLabels := <-testLabelChannel, <-trainingLabelChannel
+	testImages, trainingImages := <-testImageChannel, <-trainingImageChannel
+	overallSet := loader.makeSamples(trainingImages, trainingLabels)
+	trainingIndex := int(loader.trainingSize * float64(overallSet.Length()))
+	return overallSet.To(trainingIndex),
+		overallSet.From(trainingIndex),
+		loader.makeSamples(testImages, testLabels)
 }
 
 // Downloads and parses the specified IDX file with the image set
 // content. Any error at any stage causes immediate termination.
-func (loader *MNISTLoader) loadImages(
-	filename string,
-	waitGroup *sync.WaitGroup,
-	imageChannel chan<- []mat.Vector,
-	errChannel chan<- error,
-) {
-	defer waitGroup.Done()
-	idx, err := loader.getAndDecompressIDX(filename)
-	if err != nil {
-		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
-		return
-	}
-	images, err := parseImages(idx)
-	if err != nil {
-		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
-		return
-	}
-	imageChannel <- images
-}
-
-// Fetches the target archive and unpacks it straight to the memory.
-func (loader *MNISTLoader) getAndDecompressIDX(filename string) ([]byte, error) {
-	fmt.Printf("Loading %s\n", filename)
-	start := time.Now()
-	response, err := loader.client.Get(fmt.Sprintf("http://yann.lecun.com/exdb/mnist/%s.gz", filename))
-	if err != nil {
-		return nil, err
-	}
-	reader, err := gzip.NewReader(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	idx, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return nil, err
-	}
-	err = response.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-	fmt.Printf(
-		"Loaded %s: %.3f mib (%.3f s)\n",
-		filename,
-		float64(len(idx))/(1<<20),
-		time.Since(start).Seconds(),
-	)
-	return idx, nil
-}
-
-// Downloads and parses the specified IDX file with the label set
-// content. Any error at any stage causes immediate termination.
-func (loader *MNISTLoader) loadLabels(
-	filename string,
-	waitGroup *sync.WaitGroup,
-	labelChannel chan<- []int,
-	errChannel chan<- error,
-) {
-	defer waitGroup.Done()
-	idx, err := loader.getAndDecompressIDX(filename)
-	if err != nil {
-		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
-		return
-	}
-	labels, err := parseLabels(idx)
-	if err != nil {
-		errChannel <- fmt.Errorf("mnist: %s: %v", filename, err)
-		return
-	}
-	labelChannel <- labels
-}
-
-// Accepts a set of bytes in IDX format to transform them into
+// Works a set of bytes in IDX format to transform them into
 // more "mathematical" data structure - vector.Vector . The
 // specification of MNIST declares images in the form of the 3D
 // tensor (60000 images x 28 pixels width x 28 pixels height),
@@ -148,11 +68,8 @@ func (loader *MNISTLoader) loadLabels(
 // are flattened and divided by 255 to obtain activation vector
 // for further computations. All images are read in C-style - i.e.
 // row-by-row or row-wise.
-func parseImages(idx []byte) ([]mat.Vector, error) {
-	pixels, size, err := checkIDX(idx, 3)
-	if err != nil {
-		return nil, err
-	}
+func (loader *MNISTLoader) loadImages(filename string, channel chan<- []mat.Vector) {
+	pixels, size := loader.loadIDX(filename, 3)
 	images, length := make([]mat.Vector, size), len(pixels)/size
 	for i := 0; i < size; i++ {
 		nonZero := 0
@@ -170,26 +87,47 @@ func parseImages(idx []byte) ([]mat.Vector, error) {
 		}
 		images[i] = sparse.NewVector(length, indices, items)
 	}
-	return images, nil
+	channel <- images
 }
 
-// Validates the structure of an IDX byte array. Basically, the
+// Fetches the target archive and unpacks it straight to the memory.
+// Also validates the structure of an IDX byte array. Basically, the
 // most significant requirements are appropriate content length,
 // content identifier and overall ND-array shape. All the data
 // can be taken from a few leading 32-bit integer magic numbers.
-func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
-	minLength := 4 * (dimensions + 1)
-	if len(idx) < minLength {
-		return nil, 0, fmt.Errorf("invalid idx: too short - %d bytes, expected %d", len(idx), minLength)
+// Returns personally ND-array data and the number of items in the
+// very first dimension.
+func (loader *MNISTLoader) loadIDX(filename string, dimensions int) ([]byte, int) {
+	fmt.Printf("Loading %s\n", filename)
+	start := time.Now()
+	response, err := loader.client.Get(fmt.Sprintf("http://yann.lecun.com/exdb/mnist/%s.gz", filename))
+	if err != nil {
+		panic(fmt.Sprintf("loading: mnist couldn't get %s\n%v", filename, err))
+	}
+	reader, err := gzip.NewReader(response.Body)
+	if err != nil {
+		panic(fmt.Sprintf("loading: mnist couldn't decompress %s\n%v", filename, err))
+	}
+	idx, err := ioutil.ReadAll(reader)
+	if err != nil {
+		panic(fmt.Sprintf("loading: mnist couldn't read %s\n%v", filename, err))
+	}
+	err = response.Body.Close()
+	if err != nil {
+		panic(fmt.Sprintf("loading: mnist couldn't finalize %s\n%v", filename, err))
+	}
+	idxLength, minLength := len(idx), 4*(dimensions+1)
+	if idxLength < minLength {
+		panic(fmt.Sprintf("loading: mnist idx should be %d bytes but got %d", minLength, idxLength))
 	}
 	if idx[0] != 0 || idx[1] != 0 {
-		return nil, 0, fmt.Errorf("invalid idx: first 2 bytes should be 0 but got %d & %d", idx[0], idx[1])
+		panic(fmt.Sprintf("loading: mnist idx first 2 bytes should be 0 but got %d & %d", idx[0], idx[1]))
 	}
 	if idx[2] != 8 {
-		return nil, 0, fmt.Errorf("invalid idx: 3rd byte should be 8 but got %d", idx[2])
+		panic(fmt.Sprintf("loading: mnist idx 3rd byte should be 8 but got %d", idx[2]))
 	}
 	if idx[3] != byte(dimensions) {
-		return nil, 0, fmt.Errorf("invalid idx: 4th byte should be %d but got %d", dimensions, idx[3])
+		panic(fmt.Sprintf("loading: mnist idx 4th byte should be %d but got %d", dimensions, idx[3]))
 	}
 	data, size := idx[minLength:], int(binary.BigEndian.Uint32(idx[4:8]))
 	total := size
@@ -197,49 +135,43 @@ func checkIDX(idx []byte, dimensions int) ([]byte, int, error) {
 		total *= int(binary.BigEndian.Uint32(idx[i*4 : (i+1)*4]))
 	}
 	if length := len(data); total != length {
-		return nil, 0, fmt.Errorf("invalid idx: different lengths %d and %d", total, length)
+		panic(fmt.Sprintf("loading: mnist idx different lengths %d and %d", total, length))
 	}
-	return data, size, nil
+	fmt.Printf(
+		"Loaded %s: %.3f mib (%.3f s)\n",
+		filename,
+		float64(idxLength)/(1<<20),
+		time.Since(start).Seconds(),
+	)
+	return data, size
 }
 
+// Downloads and parses the specified IDX file with the label set.
 // Processes an image label IDX slice. Here should be followed
 // all the requirements of IDX format plus all the labels should
 // be one-digit unsigned integers.
-func parseLabels(idx []byte) ([]int, error) {
-	labels, _, err := checkIDX(idx, 1)
-	if err != nil {
-		return nil, err
-	}
-	ints := make([]int, len(labels))
-	for i, label := range labels {
+func (loader *MNISTLoader) loadLabels(filename string, channel chan<- []int) {
+	bytes, _ := loader.loadIDX(filename, 1)
+	labels := make([]int, len(bytes))
+	for i, label := range bytes {
 		if label > 9 {
-			return nil, fmt.Errorf("invalid idx: invalid label %d at index %d", label, i)
+			panic(fmt.Sprintf("sampling: mnist idx invalid label %d at %d", label, i))
 		}
-		ints[i] = int(label)
+		labels[i] = int(label)
 	}
-	return ints, nil
-}
-
-// Checks the lengths of image and label arrays - they must
-// be equal to avoid an inconsistency.
-func checkLengths(images []mat.Vector, labels []int) error {
-	imagesLength, labelsLength := len(images), len(labels)
-	if imagesLength != labelsLength {
-		return fmt.Errorf("mnist: sets have different lengths %d & %d", imagesLength, labelsLength)
-	}
-	if imagesLength < 10 {
-		return fmt.Errorf("mnist: sets have low length %d", imagesLength)
-	}
-	return nil
+	channel <- labels
 }
 
 // Produces example array - a set of labeled images suitable for
 // a network processing.
-func makeSamples(images []mat.Vector, labels []int) *sampling.Samples {
-	return sampling.NewSamples(
-		len(labels),
-		func(i int) *sampling.Sample {
-			return &sampling.Sample{Activations: images[i], Label: labels[i]}
-		},
-	)
+func (loader *MNISTLoader) makeSamples(images []mat.Vector, labels []int) *sampling.Samples {
+	imagesLength, labelsLength := len(images), len(labels)
+	if imagesLength != labelsLength {
+		panic(fmt.Sprintf("loading: mnist sets have different lengths %d & %d", imagesLength, labelsLength))
+	}
+	items := make([]*sampling.Sample, imagesLength)
+	for i := 0; i < imagesLength; i++ {
+		items[i] = sampling.NewSample(images[i], labels[i])
+	}
+	return sampling.NewSamples(items...)
 }
