@@ -1,4 +1,4 @@
-package initializers
+package init
 
 type Kind int
 

@@ -1,4 +1,4 @@
-package initializers
+package init
 
 import (
 	"gonum.org/v1/gonum/mat"
