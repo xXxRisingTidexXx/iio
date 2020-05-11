@@ -1,4 +1,4 @@
-package guts
+package neurons
 
 import (
 	"gonum.org/v1/gonum/mat"

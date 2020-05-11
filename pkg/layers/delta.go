@@ -1,4 +1,4 @@
-package guts
+package layers
 
 import (
 	"fmt"

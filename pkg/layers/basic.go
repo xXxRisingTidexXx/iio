@@ -1,10 +1,11 @@
-package guts
+package layers
 
 import (
 	"gonum.org/v1/gonum/mat"
+	"iio/pkg/neurons"
 )
 
-func NewBasicLayer(neuron Neuron, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
+func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
 	if neuron == nil || weights == nil || biases == nil {
 		panic("guts: basic layer got nil argument(s)")
 	}
@@ -12,7 +13,7 @@ func NewBasicLayer(neuron Neuron, weights *mat.Dense, biases *mat.VecDense) *Bas
 }
 
 type BasicLayer struct {
-	neuron  Neuron
+	neuron  neurons.Neuron
 	weights *mat.Dense
 	biases  *mat.VecDense
 }

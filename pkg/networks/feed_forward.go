@@ -3,13 +3,14 @@ package networks
 import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
-	"iio/pkg/guts"
+	"iio/pkg/layers"
 	"iio/pkg/loading"
+	"iio/pkg/loss"
 )
 
 type FeedForwardNetwork struct {
-	layers         []guts.Layer
-	costFunction   guts.CostFunction
+	layers         []layers.Layer
+	costFunction   loss.CostFunction
 	trainingLoader loading.Loader
 	testLoader     loading.Loader
 	epochs         int
@@ -23,7 +24,7 @@ func (network *FeedForwardNetwork) Train() {
 		for network.trainingLoader.Next() {
 			batch := network.trainingLoader.Batch(network.batchSize)
 			length := len(batch)
-			deltasChannel := make(chan []*guts.Delta, length)
+			deltasChannel := make(chan []*layers.Delta, length)
 			for _, sample := range batch {
 				go network.train(sample, deltasChannel)
 			}
@@ -37,18 +38,18 @@ func (network *FeedForwardNetwork) Train() {
 	}
 }
 
-func (network *FeedForwardNetwork) train(sample *loading.Sample, deltasChannel chan<- []*guts.Delta) {
+func (network *FeedForwardNetwork) train(sample *loading.Sample, deltasChannel chan<- []*layers.Delta) {
 	length := len(network.layers)
 	activations := make([]mat.Vector, length+1)
 	activations[0] = sample.Data()
 	for i, layer := range network.layers {
 		activations[i+1] = layer.FeedForward(activations[i])
 	}
-	deltas := make([]*guts.Delta, length)
+	deltas := make([]*layers.Delta, length)
 	diffs := network.costFunction.Differentiate(activations[length], sample.Label())
 	for i := length - 1; i >= 0; i-- {
 		nodes := network.layers[i].ProduceNodes(diffs, activations[i+1])
-		deltas[i] = guts.NewDelta(nodes, activations[i])
+		deltas[i] = layers.NewDelta(nodes, activations[i])
 		if i > 0 {
 			diffs = network.layers[i].BackPropagate(nodes)
 		}
