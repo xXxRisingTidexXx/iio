@@ -6,6 +6,10 @@ import (
 
 type MSECostFunction struct{}
 
+// Calculates errors
 func (costFunction *MSECostFunction) Evaluate(activations mat.Vector, label int) mat.Vector {
-	panic("implement me")
+	vector := mat.NewVecDense(activations.Len(), nil)
+	vector.SetVec(label, 1)
+	vector.SubVec(activations, vector)
+	return vector
 }
