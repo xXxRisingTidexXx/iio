@@ -13,7 +13,7 @@ type SigmoidNeuron struct{}
 
 func (neuron *SigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
 	if input == nil {
-		panic("neurons: sigmoid neuron got nil vector")
+		panic("neurons: sigmoid neuron got nil input")
 	}
 	return neuron.apply(
 		input,
@@ -34,7 +34,7 @@ func (neuron *SigmoidNeuron) apply(vector mat.Vector, applier func(int, float64)
 
 func (neuron *SigmoidNeuron) Differentiate(output mat.Vector) mat.Vector {
 	if output == nil {
-		panic("neurons: sigmoid neuron got nil vector")
+		panic("neurons: sigmoid neuron got nil output")
 	}
 	return neuron.apply(
 		output,

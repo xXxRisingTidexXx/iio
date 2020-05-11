@@ -6,8 +6,14 @@ import (
 )
 
 func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
-	if neuron == nil || weights == nil || biases == nil {
-		panic("layers: basic layer got nil argument(s)")
+	if neuron == nil {
+		panic("layers: basic layer neuron can't be nil")
+	}
+	if weights == nil {
+		panic("layers: basic layer weights can't be nil")
+	}
+	if biases == nil {
+		panic("layers: basic layer biases can't be nil")
 	}
 	return &BasicLayer{neuron, weights, biases}
 }
@@ -20,7 +26,7 @@ type BasicLayer struct {
 
 func (layer *BasicLayer) FeedForward(activations mat.Vector) mat.Vector {
 	if activations == nil {
-		panic("layers: basic layer got nil vector")
+		panic("layers: basic layer got nil activations")
 	}
 	rows, _ := layer.weights.Dims()
 	input := mat.NewVecDense(rows, nil)
@@ -30,8 +36,11 @@ func (layer *BasicLayer) FeedForward(activations mat.Vector) mat.Vector {
 }
 
 func (layer *BasicLayer) ProduceNodes(diffs, activations mat.Vector) mat.Vector {
-	if diffs == nil || activations == nil {
-		panic("layers: basic layer got nil vector(s)")
+	if diffs == nil {
+		panic("layers: basic layer got nil diffs")
+	}
+	if activations == nil {
+		panic("layers: basic layer got nil activations")
 	}
 	nodes := mat.NewVecDense(activations.Len(), nil)
 	nodes.MulElemVec(diffs, layer.neuron.Differentiate(activations))
@@ -40,7 +49,7 @@ func (layer *BasicLayer) ProduceNodes(diffs, activations mat.Vector) mat.Vector 
 
 func (layer *BasicLayer) BackPropagate(nodes mat.Vector) mat.Vector {
 	if nodes == nil {
-		panic("layers: basic layer got nil vector")
+		panic("layers: basic layer got nil nodes")
 	}
 	_, columns := layer.weights.Dims()
 	diffs := mat.NewVecDense(columns, nil)

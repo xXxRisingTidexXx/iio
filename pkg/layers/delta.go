@@ -6,8 +6,11 @@ import (
 )
 
 func NewDelta(nodes, activations mat.Vector) *Delta {
-	if nodes == nil || activations == nil {
-		panic(fmt.Sprintf("layers: delta got nil vector"))
+	if nodes == nil {
+		panic(fmt.Sprintf("layers: delta nodes can't be nil"))
+	}
+	if activations == nil {
+		panic(fmt.Sprintf("layers: delta activations can't be nil"))
 	}
 	rows, columns := nodes.Len(), activations.Len()
 	weights := mat.NewDense(rows, columns, nil)

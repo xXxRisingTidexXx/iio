@@ -13,7 +13,7 @@ type MSECostFunction struct{}
 
 func (costFunction *MSECostFunction) Evaluate(actual mat.Vector) int {
 	if actual == nil {
-		panic("costs: mse cost function got nil vector")
+		panic("costs: mse cost function got nil actual")
 	}
 	index, max := 0, actual.AtVec(0)
 	for i := 1; i < actual.Len(); i++ {
@@ -27,7 +27,7 @@ func (costFunction *MSECostFunction) Evaluate(actual mat.Vector) int {
 
 func (costFunction *MSECostFunction) Differentiate(actual mat.Vector, label int) mat.Vector {
 	if actual == nil {
-		panic("costs: mse cost function got nil vector")
+		panic("costs: mse cost function got nil actual")
 	}
 	length := actual.Len()
 	if label < 0 || label >= length {

@@ -15,9 +15,9 @@ func NewFeedForwardNetwork(
 	learningRate float64,
 	trainingLoader loading.Loader,
 	testLoader loading.Loader,
-	weightInitializerKind init.Kind,
-	biasInitializerKind init.Kind,
-	costFunctionKind costs.Kind,
+	weightInitializer init.Initializer,
+	biasInitializer init.Initializer,
+	costFunction costs.CostFunction,
 	schemas ...layers.Schema,
 ) *FeedForwardNetwork {
 	if epochNumber < 1 {
@@ -36,7 +36,7 @@ func NewFeedForwardNetwork(
 		trainingLoader,
 		testLoader,
 		layers,
-		costs.NewCostFunction(costFunctionKind),
+		costFunction,
 	}
 }
 
