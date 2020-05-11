@@ -5,18 +5,9 @@ import (
 	"iio/pkg/neurons"
 )
 
-func NewBasicLayer(kind Kind, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
-	var neuron neurons.Neuron
-	switch kind {
-	case Input:
-		panic("layers: input layer can't be instantiated")
-	case Sigmoid:
-		neuron = neurons.NewSigmoidNeuron()
-	default:
-		panic("layers: undefined layer kind")
-	}
-	if weights == nil || biases == nil {
-		panic("layers: basic layer got nil vector(s)")
+func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
+	if neuron == nil || weights == nil || biases == nil {
+		panic("layers: basic layer got nil argument(s)")
 	}
 	return &BasicLayer{neuron, weights, biases}
 }
