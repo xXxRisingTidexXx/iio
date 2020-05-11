@@ -46,9 +46,9 @@ func (layer *FeedForwardLayer) Update(learningRate float64, delta *Delta) {
 	}
 	layer.weights.Apply(
 		func(i, j int, value float64) float64 {
-			return value + learningRate*delta.Weights.At(i, j)
+			return value + learningRate*delta.Weights().At(i, j)
 		},
 		layer.weights,
 	)
-	layer.biases.AddScaledVec(layer.biases, learningRate, delta.Biases)
+	layer.biases.AddScaledVec(layer.biases, learningRate, delta.Biases())
 }
