@@ -7,7 +7,7 @@ import (
 	"iio/pkg/loading"
 )
 
-type FFNetwork struct {
+type FeedForwardNetwork struct {
 	layers         []guts.Layer
 	costFunction   guts.CostFunction
 	trainingLoader loading.Loader
@@ -17,7 +17,7 @@ type FFNetwork struct {
 	learningRate   float64
 }
 
-func (network *FFNetwork) Train() {
+func (network *FeedForwardNetwork) Train() {
 	for epoch := 0; epoch < network.epochs; epoch++ {
 		network.trainingLoader.Shuffle()
 		for network.trainingLoader.Next() {
@@ -37,7 +37,7 @@ func (network *FFNetwork) Train() {
 	}
 }
 
-func (network *FFNetwork) train(sample *loading.Sample, deltasChannel chan<- []*guts.Delta) {
+func (network *FeedForwardNetwork) train(sample *loading.Sample, deltasChannel chan<- []*guts.Delta) {
 	length := len(network.layers)
 	activations := make([]mat.Vector, length+1)
 	activations[0] = sample.Data()
@@ -56,7 +56,7 @@ func (network *FFNetwork) train(sample *loading.Sample, deltasChannel chan<- []*
 	deltasChannel <- deltas
 }
 
-func (network *FFNetwork) Test() *Report {
+func (network *FeedForwardNetwork) Test() *Report {
 	network.testLoader.Shuffle()
 	for network.testLoader.Next() {
 		batch := network.testLoader.Batch(network.batchSize)
@@ -72,10 +72,10 @@ func (network *FFNetwork) Test() *Report {
 	return &Report{}
 }
 
-func (network *FFNetwork) test(sample *loading.Sample, resultChannel chan<- *result) {
+func (network *FeedForwardNetwork) test(sample *loading.Sample, resultChannel chan<- *result) {
 	panic("implement me")
 }
 
-func (network *FFNetwork) Evaluate(input mat.Vector) int {
+func (network *FeedForwardNetwork) Evaluate(input mat.Vector) int {
 	panic("implement me")
 }
