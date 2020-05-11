@@ -5,8 +5,8 @@ import (
 )
 
 type Layer interface {
-	FeedForward(mat.Vector) mat.Vector
-	ProduceNodes(mat.Vector) mat.Vector
-	BackPropagate(mat.Vector) mat.Vector
-	Update(*Delta)
+	FeedForward(activations mat.Vector) mat.Vector
+	ProduceNodes(diffs, activations mat.Vector) mat.Vector
+	BackPropagate(nodes mat.Vector) mat.Vector
+	Update(delta *Delta)
 }
