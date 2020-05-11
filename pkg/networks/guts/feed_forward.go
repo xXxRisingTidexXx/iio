@@ -11,20 +11,28 @@ type FeedForwardLayer struct {
 }
 
 func (layer *FeedForwardLayer) FeedForward(activations mat.Vector) mat.Vector {
-	panic("implement me")
+	row, _ := layer.weights.Dims()
+	z := mat.NewVecDense(row, nil)
+	z.MulVec(layer.weights, activations)
+	z.AddVec(z, layer.biases)
+	return layer.neuron.Evaluate(z)
 }
 
 // Forms a node level
-func (layer *FeedForwardLayer) ProduceNodes(diffs mat.Vector) mat.Vector {
+func (layer *FeedForwardLayer) ProduceNodes(diffs, activations mat.Vector) mat.Vector {
 	row, _ := layer.weights.Dims()
-	vector := mat.NewVecDense(row, nil)
-	vector.MulVec(layer.weights, diffs)
-	vector.AddVec(vector, layer.biases)
-	return layer.neuron.Evaluate(vector)
+	z := mat.NewVecDense(row, nil)
+	resultDelta := mat.NewVecDense(row, nil)
+	z.MulVec(layer.weights, activations)
+	z.AddVec(z, layer.biases)
+	resultDelta.MulElemVec(diffs, layer.neuron.Differentiate(z))
+	return resultDelta
 }
 
 func (layer *FeedForwardLayer) BackPropagate(nodes mat.Vector) mat.Vector {
-	panic("implement me")
+	vector := mat.NewVecDense(nodes.Len(), nil)
+	vector.MulVec(layer.weights.T(), nodes)
+	return vector
 }
 
 func (layer *FeedForwardLayer) Update(delta *Delta) {
