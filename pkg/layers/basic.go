@@ -52,11 +52,11 @@ func (layer *BasicLayer) Update(learningRate float64, delta *Delta) {
 	if delta == nil {
 		panic("layers: basic layer got nil delta")
 	}
-	layer.weights.Apply(
-		func(i, j int, value float64) float64 {
-			return value + learningRate*delta.Weights().At(i, j)
-		},
-		layer.weights,
-	)
+	rows, columns := layer.weights.Dims()
+	for i := 0; i < rows; i++ {
+		for j := 0; j < columns; j++ {
+			layer.weights.Set(i, j, layer.weights.At(i, j)+learningRate*delta.Weights().At(i, j))
+		}
+	}
 	layer.biases.AddScaledVec(layer.biases, learningRate, delta.Biases())
 }
