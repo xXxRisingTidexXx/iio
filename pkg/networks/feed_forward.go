@@ -3,23 +3,55 @@ package networks
 import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
+	"iio/pkg/costs"
+	"iio/pkg/init"
 	"iio/pkg/layers"
 	"iio/pkg/loading"
-	"iio/pkg/loss"
 )
 
+func NewFeedForwardNetwork(
+	epochNumber int,
+	batchSize int,
+	learningRate float64,
+	trainingLoader loading.Loader,
+	testLoader loading.Loader,
+	weightInitializerKind init.Kind,
+	biasInitializerKind init.Kind,
+	costFunctionKind costs.Kind,
+	schemas ...layers.Schema,
+) *FeedForwardNetwork {
+	if epochNumber < 1 {
+		panic(fmt.Sprintf("networks: invalid epoch number, %d", epochNumber))
+	}
+	if batchSize < 1 {
+		panic(fmt.Sprintf("networks: invalid batch size, %d", batchSize))
+	}
+	if trainingLoader == nil || testLoader == nil {
+		panic("networks: feed forward network got nil loader(s)")
+	}
+	return &FeedForwardNetwork{
+		epochNumber,
+		batchSize,
+		learningRate,
+		trainingLoader,
+		testLoader,
+		layers,
+		costs.NewCostFunction(costFunctionKind),
+	}
+}
+
 type FeedForwardNetwork struct {
-	layers         []layers.Layer
-	costFunction   loss.CostFunction
-	trainingLoader loading.Loader
-	testLoader     loading.Loader
-	epochs         int
+	epochNumber    int
 	batchSize      int
 	learningRate   float64
+	trainingLoader loading.Loader
+	testLoader     loading.Loader
+	layers         []layers.Layer
+	costFunction   costs.CostFunction
 }
 
 func (network *FeedForwardNetwork) Train() {
-	for epoch := 0; epoch < network.epochs; epoch++ {
+	for epoch := 0; epoch < network.epochNumber; epoch++ {
 		network.trainingLoader.Shuffle()
 		for network.trainingLoader.Next() {
 			batch := network.trainingLoader.Batch(network.batchSize)

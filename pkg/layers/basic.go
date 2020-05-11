@@ -6,10 +6,19 @@ import (
 )
 
 func NewBasicLayer(kind Kind, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
+	var neuron neurons.Neuron
+	switch kind {
+	case Input:
+		panic("layers: input layer can't be instantiated")
+	case Sigmoid:
+		neuron = neurons.NewSigmoidNeuron()
+	default:
+		panic("layers: undefined layer kind")
+	}
 	if weights == nil || biases == nil {
 		panic("layers: basic layer got nil vector(s)")
 	}
-	return &BasicLayer{neurons.NewNeuron(kind), weights, biases}
+	return &BasicLayer{neuron, weights, biases}
 }
 
 type BasicLayer struct {
