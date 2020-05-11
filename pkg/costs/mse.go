@@ -5,6 +5,10 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+func NewMSECostFunction() *MSECostFunction {
+	return &MSECostFunction{}
+}
+
 type MSECostFunction struct{}
 
 func (costFunction *MSECostFunction) Evaluate(actual mat.Vector) int {
