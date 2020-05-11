@@ -5,10 +5,6 @@ import (
 	"math"
 )
 
-const (
-	sigmoidOne = 1.0
-)
-
 type SigmoidNeuron struct{}
 
 // Calculates the elements of the incoming nodes array according
@@ -16,7 +12,7 @@ type SigmoidNeuron struct{}
 func (neuron *SigmoidNeuron) Evaluate(activations mat.Vector) mat.Vector {
 	vector := mat.NewVecDense(activations.Len(), nil)
 	for i := 0; i < vector.Len(); i++ {
-		vector.SetVec(i, sigmoidOne / (sigmoidOne + math.Pow(math.E, -activations.AtVec(i))))
+		vector.SetVec(i, 1 / (1 + math.Exp(-activations.AtVec(i))))
 	}
 	return vector
 }
@@ -26,8 +22,7 @@ func (neuron *SigmoidNeuron) Evaluate(activations mat.Vector) mat.Vector {
 func (neuron *SigmoidNeuron) Differentiate(activations mat.Vector) mat.Vector {
 	vector := mat.NewVecDense(activations.Len(), nil)
 	for i := 0; i < vector.Len(); i++ {
-		vector.SetVec(i, math.Pow(math.E,
-			activations.AtVec(i)) / math.Pow(sigmoidOne + math.Pow(math.E, activations.AtVec(i)), 2))
+		vector.SetVec(i, activations.AtVec(i) * (1 - activations.AtVec(i)))
 	}
 	return vector
 }
