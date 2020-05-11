@@ -5,6 +5,10 @@ import (
 	"math"
 )
 
+func NewSigmoidNeuron() *SigmoidNeuron {
+	return &SigmoidNeuron{}
+}
+
 type SigmoidNeuron struct{}
 
 func (neuron *SigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
