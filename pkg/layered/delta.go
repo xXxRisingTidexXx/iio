@@ -26,3 +26,7 @@ type Delta struct {
 	Weights mat.Matrix
 	Biases  mat.Vector
 }
+
+func (delta *Delta) Equal(other *Delta) bool {
+	return other != nil && mat.Equal(delta.Weights, other.Weights) && mat.Equal(delta.Biases, other.Biases)
+}
