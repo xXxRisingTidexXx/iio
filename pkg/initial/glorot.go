@@ -10,6 +10,7 @@ func NewGlorotInitializer() *GlorotInitializer {
 	return &GlorotInitializer{}
 }
 
+// Glorot (Xavier) normal sigmoid initializer.
 type GlorotInitializer struct{}
 
 func (initializer *GlorotInitializer) InitializeVector(length int) *mat.VecDense {
@@ -21,7 +22,7 @@ func (initializer *GlorotInitializer) InitializeVector(length int) *mat.VecDense
 }
 
 func (initializer *GlorotInitializer) InitializeMatrix(rows, columns int) *mat.Dense {
-	sigma := math.Sqrt(1 / float64(columns))
+	sigma := math.Sqrt(32 / float64(rows+columns))
 	matrix := mat.NewDense(rows, columns, nil)
 	for i := 0; i < rows; i++ {
 		for j := 0; j < columns; j++ {
