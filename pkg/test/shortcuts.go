@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega"
 	"gonum.org/v1/gonum/mat"
 )
@@ -29,4 +30,8 @@ func Matrix(rows, columns int, values ...float64) *mat.Dense {
 
 func Equate(a, b mat.Matrix) {
 	gomega.Expect(mat.Equal(a, b)).To(gomega.BeTrue())
+}
+
+func Comply(a, b interface{}) {
+	gomega.Expect(cmp.Equal(a, b)).To(gomega.BeTrue())
 }
