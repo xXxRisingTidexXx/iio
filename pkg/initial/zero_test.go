@@ -9,12 +9,12 @@ import (
 var _ = Describe("zero", func() {
 	initializer := initial.NewZeroInitializer()
 	Context("vector initialization", func() {
-		It("should correctly initialize a vector of zeros", func() {
+		test.With("should correctly initialize a vector of zeros", func() {
 			test.Equate(initializer.InitializeVector(5), test.Vector(0, 0, 0, 0, 0))
 		})
 	})
 	Context("matrix initialization", func() {
-		It("should correctly initialize a matrix of zeros", func() {
+		test.With("should correctly initialize a matrix of zeros", func() {
 			test.Equate(initializer.InitializeMatrix(3, 3), test.Matrix(3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 		})
 	})

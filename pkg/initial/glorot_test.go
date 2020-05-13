@@ -13,7 +13,7 @@ var _ = Describe("glorot", func() {
 		rand.Seed(42)
 	})
 	Context("vector initialization", func() {
-		It("should correctly initialize a vector of normally-distributed values", func() {
+		test.With("should correctly initialize a vector of normally-distributed values", func() {
 			test.Equate(
 				initializer.InitializeVector(5),
 				test.Vector(
@@ -27,7 +27,7 @@ var _ = Describe("glorot", func() {
 		})
 	})
 	Context("matrix initialization", func() {
-		It("should correctly initialize a matrix of normally-distributed values", func() {
+		test.With("should correctly initialize a matrix of normally-distributed values", func() {
 			test.Equate(
 				initializer.InitializeMatrix(5, 3),
 				test.Matrix(

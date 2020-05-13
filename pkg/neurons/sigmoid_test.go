@@ -9,7 +9,7 @@ import (
 var _ = Describe("sigmoid", func() {
 	neuron := neurons.NewSigmoidNeuron()
 	Context("evaluation", func() {
-		It("should correctly apply logistic function to vector", func() {
+		test.With("should correctly apply logistic function to vector", func() {
 			test.Equate(
 				neuron.Evaluate(
 					test.Vector(-0.23, 0.7682, 2.92881, 0.00271, 5.782, 0, -2391, 1037.5, -5.820, -30.00041),
@@ -30,7 +30,7 @@ var _ = Describe("sigmoid", func() {
 		})
 	})
 	Context("differentiation", func() {
-		It("should correctly apply logistic differentiation to vector", func() {
+		test.With("should correctly apply logistic differentiation to vector", func() {
 			test.Equate(
 				neuron.Differentiate(
 					test.Vector(0.111293, 1, 0, 0.373892, 0.45, 0.1, 1.491e-12, 0.8, 0.0089144, 1.046e-7),
