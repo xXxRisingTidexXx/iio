@@ -13,11 +13,18 @@ func Vector(values ...float64) *mat.VecDense {
 	return mat.NewVecDense(length, values)
 }
 
-func Zeros(length int) *mat.VecDense {
-	if length <= 0 {
-		panic("test: vector of zeros can't be empty")
+func Matrix(rows, columns int, values ...float64) *mat.Dense {
+	if rows <= 0 || columns <= 0 {
+		panic("test: matrix dimensions can't be non-positive")
 	}
-	return mat.NewVecDense(length, nil)
+	length := len(values)
+	if values == nil || length == 0 {
+		panic("test: matrix can't be empty")
+	}
+	if rows * columns != length {
+		panic("test: matrix dimension inconsistency")
+	}
+	return mat.NewDense(rows, columns, values)
 }
 
 func Equate(a, b mat.Matrix) {
