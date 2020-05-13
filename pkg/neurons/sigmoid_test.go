@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("sigmoid", func() {
-	var neuron = neurons.NewSigmoidNeuron()
+	neuron := neurons.NewSigmoidNeuron()
 	Context("evaluation", func() {
 		It("should correctly apply logistic function to vector", func() {
 			test.Equate(
