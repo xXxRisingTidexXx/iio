@@ -33,7 +33,6 @@ func Comply(a, b interface{}) {
 	gomega.Expect(cmp.Equal(a, b)).To(gomega.BeTrue())
 }
 
-
 func Vector(values ...float64) *mat.VecDense {
 	length := len(values)
 	if values == nil || length == 0 {
