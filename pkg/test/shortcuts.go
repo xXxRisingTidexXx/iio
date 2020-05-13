@@ -21,7 +21,7 @@ func Matrix(rows, columns int, values ...float64) *mat.Dense {
 	if values == nil || length == 0 {
 		panic("test: matrix can't be empty")
 	}
-	if rows * columns != length {
+	if rows*columns != length {
 		panic("test: matrix dimension inconsistency")
 	}
 	return mat.NewDense(rows, columns, values)
