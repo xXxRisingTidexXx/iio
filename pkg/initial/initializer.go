@@ -5,6 +5,6 @@ import (
 )
 
 type Initializer interface {
-	InitializeMatrix(int, int) *mat.Dense
 	InitializeVector(int) *mat.VecDense
+	InitializeMatrix(int, int) *mat.Dense
 }

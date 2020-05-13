@@ -12,6 +12,14 @@ func NewGlorotInitializer() *GlorotInitializer {
 
 type GlorotInitializer struct{}
 
+func (initializer *GlorotInitializer) InitializeVector(length int) *mat.VecDense {
+	vector := mat.NewVecDense(length, nil)
+	for i := 0; i < length; i++ {
+		vector.SetVec(i, rand.NormFloat64())
+	}
+	return vector
+}
+
 func (initializer *GlorotInitializer) InitializeMatrix(rows, columns int) *mat.Dense {
 	sigma := math.Sqrt(1 / float64(columns))
 	matrix := mat.NewDense(rows, columns, nil)
@@ -21,12 +29,4 @@ func (initializer *GlorotInitializer) InitializeMatrix(rows, columns int) *mat.D
 		}
 	}
 	return matrix
-}
-
-func (initializer *GlorotInitializer) InitializeVector(length int) *mat.VecDense {
-	vector := mat.NewVecDense(length, nil)
-	for i := 0; i < length; i++ {
-		vector.SetVec(i, rand.NormFloat64())
-	}
-	return vector
 }
