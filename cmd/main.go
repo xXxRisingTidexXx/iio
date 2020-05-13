@@ -2,7 +2,7 @@ package main
 
 import (
 	"iio/pkg/costs"
-	"iio/pkg/init"
+	"iio/pkg/initial"
 	"iio/pkg/layered"
 	"iio/pkg/loading"
 	"iio/pkg/networks"
@@ -17,8 +17,8 @@ func main() {
 		0.3,
 		trainingLoader,
 		testLoader,
-		init.NewGlorotInitializer(),
-		init.NewZeroInitializer(),
+		initial.NewGlorotInitializer(),
+		initial.NewZeroInitializer(),
 		costs.NewMSECostFunction(),
 		layered.NewInputSchema(784),
 		layered.NewSchema(neurons.NewSigmoidNeuron(), 30),

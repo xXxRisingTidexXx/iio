@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/costs"
-	"iio/pkg/init"
+	"iio/pkg/initial"
 	"iio/pkg/layered"
 	"iio/pkg/loading"
 )
@@ -15,8 +15,8 @@ func NewFeedForwardNetwork(
 	learningRate float64,
 	trainingLoader loading.Loader,
 	testLoader loading.Loader,
-	weightInitializer init.Initializer,
-	biasInitializer init.Initializer,
+	weightInitializer initial.Initializer,
+	biasInitializer initial.Initializer,
 	costFunction costs.CostFunction,
 	schemas ...*layered.Schema,
 ) *FeedForwardNetwork {
