@@ -1,6 +1,7 @@
 package layered
 
 import (
+	"github.com/google/go-cmp/cmp"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/neurons"
 )
@@ -22,6 +23,13 @@ type BasicLayer struct {
 	neuron  neurons.Neuron
 	weights *mat.Dense
 	biases  *mat.VecDense
+}
+
+func (layer *BasicLayer) Equal(other *BasicLayer) bool {
+	return other != nil &&
+		cmp.Equal(layer.neuron, other.neuron) &&
+		mat.Equal(layer.weights, other.weights) &&
+		mat.Equal(layer.biases, other.biases)
 }
 
 func (layer *BasicLayer) FeedForward(activations mat.Vector) mat.Vector {
