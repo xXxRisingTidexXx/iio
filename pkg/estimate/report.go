@@ -45,7 +45,7 @@ func (report *Report) String() string {
 		),
 	)
 	builder.WriteString(
-		fmt.Sprintf("  accuracy |           |        | %8.3f |         \n", report.Accuracy),
+		fmt.Sprintf(" accuracy  |           |        | %8.3f |         \n", report.Accuracy),
 	)
 	builder.WriteString("-----------+-----------+--------+----------+---------\n")
 	return builder.String()
