@@ -2,6 +2,7 @@ package estimate
 
 import (
 	"fmt"
+	"github.com/google/go-cmp/cmp"
 	"strings"
 )
 
@@ -9,6 +10,13 @@ type Report struct {
 	Classes  []*Record
 	MacroAvg *Record
 	Accuracy float64
+}
+
+func (report *Report) Equal(other *Report) bool {
+	return other != nil &&
+		cmp.Equal(report.Classes, other.Classes) &&
+		cmp.Equal(report.MacroAvg, other.MacroAvg) &&
+		report.Accuracy == other.Accuracy
 }
 
 func (report *Report) String() string {
@@ -36,9 +44,9 @@ func (report *Report) String() string {
 			report.MacroAvg.Support,
 		),
 	)
-	builder.WriteString("-----------+-----------+--------+----------+---------\n")
 	builder.WriteString(
-		fmt.Sprintf("  accuracy |                                   %5.3f \n\n", report.Accuracy),
+		fmt.Sprintf("  accuracy |           |        | %8.3f |         \n", report.Accuracy),
 	)
+	builder.WriteString("-----------+-----------+--------+----------+---------\n")
 	return builder.String()
 }
