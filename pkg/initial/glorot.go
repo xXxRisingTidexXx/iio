@@ -13,6 +13,10 @@ func NewGlorotInitializer() *GlorotInitializer {
 // Glorot (Xavier) normal sigmoid initializer.
 type GlorotInitializer struct{}
 
+func (initializer *GlorotInitializer) String() string {
+	return "glorot"
+}
+
 func (initializer *GlorotInitializer) InitializeVector(length int) *mat.VecDense {
 	vector := mat.NewVecDense(length, nil)
 	for i := 0; i < length; i++ {

@@ -10,6 +10,10 @@ func NewZeroInitializer() *ZeroInitializer {
 
 type ZeroInitializer struct{}
 
+func (initializer *ZeroInitializer) String() string {
+	return "zero"
+}
+
 func (initializer *ZeroInitializer) InitializeVector(length int) *mat.VecDense {
 	return mat.NewVecDense(length, nil)
 }
