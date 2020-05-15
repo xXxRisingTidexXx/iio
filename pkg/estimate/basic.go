@@ -32,9 +32,14 @@ func (estimator *BasicEstimator) Estimate() *Report {
 	totalPrecision, totalRecall, totalF1Score, totalAccuracy, totalSupport := 0.0, 0.0, 0.0, 0.0, 0.0
 	for i := 0; i < estimator.classNumber; i++ {
 		accuracy := estimator.confusionMatrix.At(i, i)
-		precision := accuracy / mat.Sum(estimator.confusionMatrix.RowView(i))
-		support := mat.Sum(estimator.confusionMatrix.ColView(i))
-		recall := accuracy / support
+		precision := 0.0
+		if predicted := mat.Sum(estimator.confusionMatrix.RowView(i)); predicted != 0 {
+			precision = accuracy / predicted
+		}
+		recall, support := 0.0, mat.Sum(estimator.confusionMatrix.ColView(i))
+		if support != 0 {
+			recall = accuracy / support
+		}
 		f1Score := 0.0
 		if precision != 0 && recall != 0 {
 			f1Score = 2 * precision * recall / (precision + recall)
