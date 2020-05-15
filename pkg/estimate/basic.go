@@ -2,38 +2,55 @@ package estimate
 
 import (
 	"fmt"
-	"sync"
+	"gonum.org/v1/gonum/mat"
 )
 
 func NewBasicEstimator(classNumber int) *BasicEstimator {
 	if classNumber <= 1 {
 		panic(fmt.Sprintf("reports: got invalid class number, %d", classNumber))
 	}
-	confusionMatrix := make([][]int, classNumber)
-	for i := range confusionMatrix {
-		confusionMatrix[i] = make([]int, classNumber)
-	}
-	return &BasicEstimator{classNumber: classNumber, confusionMatrix: confusionMatrix}
+	return &BasicEstimator{classNumber, mat.NewDense(classNumber, classNumber, nil)}
 }
 
 type BasicEstimator struct {
-	sync.RWMutex
 	classNumber     int
-	confusionMatrix [][]int
+	confusionMatrix *mat.Dense
 }
 
-func (reporter *BasicEstimator) Track(actual, ideal int) {
-	if actual < 0 || actual >= reporter.classNumber {
+func (estimator *BasicEstimator) Track(actual, ideal int) {
+	if actual < 0 || actual >= estimator.classNumber {
 		panic(fmt.Sprintf("reports: invalid actual label, %d", actual))
 	}
-	if ideal < 0 || ideal >= reporter.classNumber {
+	if ideal < 0 || ideal >= estimator.classNumber {
 		panic(fmt.Sprintf("reports: invalid ideal label, %d", ideal))
 	}
-	reporter.Lock()
-	reporter.confusionMatrix[actual][ideal]++
-	reporter.Unlock()
+	estimator.confusionMatrix.Set(actual, ideal, estimator.confusionMatrix.At(actual, ideal)+1)
 }
 
-func (reporter *BasicEstimator) Estimate() *Report {
-	panic("implement me")
+func (estimator *BasicEstimator) Estimate() *Report {
+	classes := make([]*Record, estimator.classNumber)
+	totalPrecision, totalRecall, totalF1Score, totalAccuracy, totalSupport := 0.0, 0.0, 0.0, 0.0, 0.0
+	for i := 0; i < estimator.classNumber; i++ {
+		accuracy := estimator.confusionMatrix.At(i, i)
+		precision := accuracy / mat.Sum(estimator.confusionMatrix.RowView(i))
+		support := mat.Sum(estimator.confusionMatrix.ColView(i))
+		recall := accuracy / support
+		f1Score := 2 * precision * recall / (precision + recall)
+		totalPrecision += precision
+		totalRecall += recall
+		totalF1Score += f1Score
+		totalAccuracy += accuracy
+		totalSupport += support
+		classes[i] = &Record{precision, recall, f1Score, int(support)}
+	}
+	return &Report{
+		classes,
+		&Record{
+			totalPrecision / float64(estimator.classNumber),
+			totalRecall / float64(estimator.classNumber),
+			totalF1Score / float64(estimator.classNumber),
+			int(totalSupport),
+		},
+		totalAccuracy / totalSupport,
+	}
 }
