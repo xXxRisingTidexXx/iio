@@ -9,7 +9,6 @@ import (
 	"iio/pkg/layered"
 	"iio/pkg/loading"
 	"sync"
-	"time"
 )
 
 func NewFeedForwardNetwork(
@@ -94,7 +93,6 @@ type FeedForwardNetwork struct {
 
 func (network *FeedForwardNetwork) Train() {
 	for epoch := 0; epoch < network.epochNumber; epoch++ {
-		start := time.Now()
 		network.trainingLoader.Shuffle()
 		for network.trainingLoader.Next() {
 			batch := network.trainingLoader.Batch(network.batchSize)
@@ -114,7 +112,6 @@ func (network *FeedForwardNetwork) Train() {
 				}
 			}
 		}
-		fmt.Printf("epoch %d took %s\n", epoch, time.Since(start))
 	}
 }
 
