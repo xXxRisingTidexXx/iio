@@ -77,7 +77,7 @@ func NewFeedForwardNetwork(
 		testLoader,
 		layers,
 		costFunction,
-		estimate.NewBasicEstimator(length),
+		estimate.NewBasicEstimator(schemas[length].Size),
 	}
 }
 
@@ -146,22 +146,32 @@ func (network *FeedForwardNetwork) Test() *estimate.Report {
 	network.testLoader.Shuffle()
 	for network.testLoader.Next() {
 		batch := network.testLoader.Batch(network.batchSize)
+		length := len(batch)
+		resultChannel := make(chan *result, length)
 		waitGroup := &sync.WaitGroup{}
-		waitGroup.Add(len(batch))
+		waitGroup.Add(length)
 		for _, sample := range batch {
-			go network.test(sample, waitGroup)
+			go network.test(sample, resultChannel, waitGroup)
 		}
 		waitGroup.Wait()
+		close(resultChannel)
+		for result := range resultChannel {
+			network.estimator.Track(result.actual, result.ideal)
+		}
 	}
 	return network.estimator.Estimate()
 }
 
-func (network *FeedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.WaitGroup) {
+func (network *FeedForwardNetwork) test(
+	sample *loading.Sample,
+	resultChannel chan<- *result,
+	waitGroup *sync.WaitGroup,
+) {
 	activations := sample.Data
 	for _, layer := range network.layers {
 		activations = layer.FeedForward(activations)
 	}
-	network.estimator.Track(network.costFunction.Evaluate(activations), sample.Label)
+	resultChannel<-&result{network.costFunction.Evaluate(activations), sample.Label}
 	waitGroup.Done()
 }
 
