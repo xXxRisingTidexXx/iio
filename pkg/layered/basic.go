@@ -37,6 +37,10 @@ func (layer *BasicLayer) Equal(other *BasicLayer) bool {
 		mat.Equal(layer.biases, other.biases)
 }
 
+func (layer *BasicLayer) String() string {
+	return fmt.Sprintf("{%s %v %v}", layer.neuron, layer.weights, layer.biases)
+}
+
 func (layer *BasicLayer) FeedForward(activations mat.Vector) mat.Vector {
 	if activations == nil {
 		panic("layers: basic layer got nil activations")

@@ -11,6 +11,10 @@ func NewSigmoidNeuron() *SigmoidNeuron {
 
 type SigmoidNeuron struct{}
 
+func (neuron *SigmoidNeuron) String() string {
+	return "sigmoid"
+}
+
 func (neuron *SigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
 	if input == nil {
 		panic("neurons: sigmoid neuron got nil input")
