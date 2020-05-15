@@ -7,6 +7,9 @@ import (
 	"iio/pkg/initial"
 	"iio/pkg/layered"
 	"iio/pkg/loading"
+	"iio/pkg/reports"
+	"sync"
+	"time"
 )
 
 func NewFeedForwardNetwork(
@@ -66,7 +69,16 @@ func NewFeedForwardNetwork(
 			panic("networks: the first schema must be an input one")
 		}
 	}
-	return &FeedForwardNetwork{epochNumber, batchSize, learningRate, trainingLoader, testLoader, layers, costFunction}
+	return &FeedForwardNetwork{
+		epochNumber,
+		batchSize,
+		learningRate,
+		trainingLoader,
+		testLoader,
+		layers,
+		costFunction,
+		reports.NewBasicReporter(length),
+	}
 }
 
 type FeedForwardNetwork struct {
@@ -77,38 +89,48 @@ type FeedForwardNetwork struct {
 	testLoader     loading.Loader
 	layers         []layered.Layer
 	costFunction   costs.CostFunction
+	reporter       reports.Reporter
 }
 
 func (network *FeedForwardNetwork) Train() {
 	for epoch := 0; epoch < network.epochNumber; epoch++ {
+		start := time.Now()
 		network.trainingLoader.Shuffle()
 		for network.trainingLoader.Next() {
 			batch := network.trainingLoader.Batch(network.batchSize)
 			length := len(batch)
 			deltasChannel := make(chan []*layered.Delta, length)
+			waitGroup := &sync.WaitGroup{}
+			waitGroup.Add(length)
 			for _, sample := range batch {
-				go network.train(sample, deltasChannel)
+				go network.train(sample, deltasChannel, waitGroup)
 			}
+			waitGroup.Wait()
+			close(deltasChannel)
 			learningRate := -network.learningRate / float64(length)
-			for i := 0; i < length; i++ {
-				deltas := <-deltasChannel
-				for j, layer := range network.layers {
-					layer.Update(learningRate, deltas[j])
+			for deltas := range deltasChannel {
+				for i, layer := range network.layers {
+					layer.Update(learningRate, deltas[i])
 				}
 			}
 		}
+		fmt.Printf("epoch %d took %s\n", epoch, time.Since(start))
 	}
 }
 
-func (network *FeedForwardNetwork) train(sample *loading.Sample, deltasChannel chan<- []*layered.Delta) {
+func (network *FeedForwardNetwork) train(
+	sample *loading.Sample,
+	deltasChannel chan<- []*layered.Delta,
+	waitGroup *sync.WaitGroup,
+) {
 	length := len(network.layers)
 	activations := make([]mat.Vector, length+1)
-	activations[0] = sample.Data()
+	activations[0] = sample.Data
 	for i, layer := range network.layers {
 		activations[i+1] = layer.FeedForward(activations[i])
 	}
 	deltas := make([]*layered.Delta, length)
-	diffs := network.costFunction.Differentiate(activations[length], sample.Label())
+	diffs := network.costFunction.Differentiate(activations[length], sample.Label)
 	for i := length - 1; i >= 0; i-- {
 		nodes := network.layers[i].ProduceNodes(diffs, activations[i+1])
 		deltas[i] = layered.NewDelta(nodes, activations[i])
@@ -117,26 +139,30 @@ func (network *FeedForwardNetwork) train(sample *loading.Sample, deltasChannel c
 		}
 	}
 	deltasChannel <- deltas
+	waitGroup.Done()
 }
 
-func (network *FeedForwardNetwork) Test() *Report {
+func (network *FeedForwardNetwork) Test() *reports.Report {
 	network.testLoader.Shuffle()
 	for network.testLoader.Next() {
 		batch := network.testLoader.Batch(network.batchSize)
-		resultChannel := make(chan *result, len(batch))
+		waitGroup := &sync.WaitGroup{}
+		waitGroup.Add(len(batch))
 		for _, sample := range batch {
-			go network.test(sample, resultChannel)
+			go network.test(sample, waitGroup)
 		}
-		for result := range resultChannel {
-			fmt.Println(result)
-			// Do some logic with results and report
-		}
+		waitGroup.Wait()
 	}
-	return &Report{}
+	return network.reporter.Report()
 }
 
-func (network *FeedForwardNetwork) test(sample *loading.Sample, resultChannel chan<- *result) {
-	panic("implement me")
+func (network *FeedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.WaitGroup) {
+	activations := sample.Data
+	for _, layer := range network.layers {
+		activations = layer.FeedForward(activations)
+	}
+	network.reporter.Track(network.costFunction.Evaluate(activations), sample.Label)
+	waitGroup.Done()
 }
 
 func (network *FeedForwardNetwork) Evaluate(input mat.Vector) int {
