@@ -10,7 +10,7 @@ func NewInputSchema(size int) *Schema {
 }
 
 func NewSchema(neuron neurons.Neuron, size int) *Schema {
-	if size < 1 {
+	if size <= 1 {
 		panic(fmt.Sprintf("layers: schema got invalid size, %d", size))
 	}
 	return &Schema{neuron, size}
