@@ -1,6 +1,6 @@
-package reports
+package estimate
 
-type Reporter interface {
+type Estimator interface {
 	Track(int, int)
-	Report() *Report
+	Estimate() *Report
 }

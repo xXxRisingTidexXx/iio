@@ -1,25 +1,28 @@
-package reports
+package estimate
 
 import (
 	"fmt"
 	"sync"
 )
 
-func NewBasicReporter(classNumber int) *BasicReporter {
+func NewBasicEstimator(classNumber int) *BasicEstimator {
 	if classNumber <= 1 {
 		panic(fmt.Sprintf("reports: got invalid class number, %d", classNumber))
 	}
-
-	return &BasicReporter{}
+	confusionMatrix := make([][]int, classNumber)
+	for i := range confusionMatrix {
+		confusionMatrix[i] = make([]int, classNumber)
+	}
+	return &BasicEstimator{classNumber: classNumber, confusionMatrix: confusionMatrix}
 }
 
-type BasicReporter struct {
+type BasicEstimator struct {
 	sync.RWMutex
-	classNumber int
+	classNumber     int
 	confusionMatrix [][]int
 }
 
-func (reporter *BasicReporter) Track(actual, ideal int) {
+func (reporter *BasicEstimator) Track(actual, ideal int) {
 	if actual < 0 || actual >= reporter.classNumber {
 		panic(fmt.Sprintf("reports: invalid actual label, %d", actual))
 	}
@@ -31,6 +34,6 @@ func (reporter *BasicReporter) Track(actual, ideal int) {
 	reporter.Unlock()
 }
 
-func (reporter *BasicReporter) Report() *Report {
+func (reporter *BasicEstimator) Estimate() *Report {
 	panic("implement me")
 }

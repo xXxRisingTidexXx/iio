@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/costs"
+	"iio/pkg/estimate"
 	"iio/pkg/initial"
 	"iio/pkg/layered"
 	"iio/pkg/loading"
-	"iio/pkg/reports"
 	"sync"
 	"time"
 )
@@ -77,7 +77,7 @@ func NewFeedForwardNetwork(
 		testLoader,
 		layers,
 		costFunction,
-		reports.NewBasicReporter(length),
+		estimate.NewBasicEstimator(length),
 	}
 }
 
@@ -89,7 +89,7 @@ type FeedForwardNetwork struct {
 	testLoader     loading.Loader
 	layers         []layered.Layer
 	costFunction   costs.CostFunction
-	reporter       reports.Reporter
+	estimator      estimate.Estimator
 }
 
 func (network *FeedForwardNetwork) Train() {
@@ -142,7 +142,7 @@ func (network *FeedForwardNetwork) train(
 	waitGroup.Done()
 }
 
-func (network *FeedForwardNetwork) Test() *reports.Report {
+func (network *FeedForwardNetwork) Test() *estimate.Report {
 	network.testLoader.Shuffle()
 	for network.testLoader.Next() {
 		batch := network.testLoader.Batch(network.batchSize)
@@ -153,7 +153,7 @@ func (network *FeedForwardNetwork) Test() *reports.Report {
 		}
 		waitGroup.Wait()
 	}
-	return network.reporter.Report()
+	return network.estimator.Estimate()
 }
 
 func (network *FeedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.WaitGroup) {
@@ -161,7 +161,7 @@ func (network *FeedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.
 	for _, layer := range network.layers {
 		activations = layer.FeedForward(activations)
 	}
-	network.reporter.Track(network.costFunction.Evaluate(activations), sample.Label)
+	network.estimator.Track(network.costFunction.Evaluate(activations), sample.Label)
 	waitGroup.Done()
 }
 
