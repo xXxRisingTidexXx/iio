@@ -2,35 +2,35 @@ package test
 
 import (
 	"github.com/google/go-cmp/cmp"
-	"github.com/onsi/ginkgo"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"gonum.org/v1/gonum/mat"
 )
 
 func With(text string, body func()) {
-	ginkgo.It(text, func() {
+	It(text, func() {
 		defer func() {
-			gomega.Expect(recover()).To(gomega.BeNil())
+			Expect(recover()).To(BeNil())
 		}()
 		body()
 	})
 }
 
 func Spare(text string, body func()) {
-	ginkgo.It(text, func() {
+	It(text, func() {
 		defer func() {
-			gomega.Expect(recover()).NotTo(gomega.BeNil())
+			Expect(recover()).NotTo(BeNil())
 		}()
 		body()
 	})
 }
 
 func Equate(a, b mat.Matrix) {
-	gomega.Expect(mat.Equal(a, b)).To(gomega.BeTrue())
+	Expect(mat.Equal(a, b)).To(BeTrue())
 }
 
 func Comply(a, b interface{}) {
-	gomega.Expect(cmp.Equal(a, b)).To(gomega.BeTrue())
+	Expect(cmp.Equal(a, b)).To(BeTrue())
 }
 
 func Vector(values ...float64) *mat.VecDense {
