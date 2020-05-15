@@ -69,7 +69,7 @@ func (loader *MNISTLoader) Batch(size int) []*Sample {
 		panic(fmt.Sprintf("loading: mnist got too low batch size %d", size))
 	}
 	if loader.position >= loader.length {
-		panic(fmt.Sprintf("loading: mnist batching ended"))
+		panic("loading: mnist batching ended")
 	}
 	if difference := loader.length - loader.position; difference < size {
 		size = difference
