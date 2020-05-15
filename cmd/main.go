@@ -14,7 +14,7 @@ func main() {
 	network := networks.NewFeedForwardNetwork(
 		10,
 		4,
-		0.3,
+		0.01,
 		trainingLoader,
 		testLoader,
 		initial.NewGlorotInitializer(),
