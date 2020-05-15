@@ -1,6 +1,7 @@
 package layered
 
 import (
+	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/neurons"
@@ -15,6 +16,10 @@ func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDen
 	}
 	if biases == nil {
 		panic("layers: basic layer biases can't be nil")
+	}
+	rows, _ := weights.Dims()
+	if length := biases.Len(); rows != length {
+		panic(fmt.Sprintf("layers: basic layer matrix row numbers must equal, got %d & %d", rows, length))
 	}
 	return &BasicLayer{neuron, weights, biases}
 }
