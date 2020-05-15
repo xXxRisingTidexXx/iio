@@ -90,9 +90,10 @@ func (network *FeedForwardNetwork) Train() {
 				go network.train(sample, deltasChannel)
 			}
 			learningRate := -network.learningRate / float64(length)
-			for deltas := range deltasChannel {
-				for i, layer := range network.layers {
-					layer.Update(learningRate, deltas[i])
+			for i := 0; i < length; i++ {
+				deltas := <-deltasChannel
+				for j, layer := range network.layers {
+					layer.Update(learningRate, deltas[j])
 				}
 			}
 		}
