@@ -1,16 +1,15 @@
 package layered
 
 import (
-	"fmt"
 	"gonum.org/v1/gonum/mat"
 )
 
 func NewDelta(nodes, activations mat.Vector) *Delta {
 	if nodes == nil {
-		panic(fmt.Sprintf("layers: delta nodes can't be nil"))
+		panic("layers: delta nodes can't be nil")
 	}
 	if activations == nil {
-		panic(fmt.Sprintf("layers: delta activations can't be nil"))
+		panic("layers: delta activations can't be nil")
 	}
 	rows, columns := nodes.Len(), activations.Len()
 	weights := mat.NewDense(rows, columns, nil)
