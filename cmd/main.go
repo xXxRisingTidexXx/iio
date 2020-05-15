@@ -14,7 +14,7 @@ import (
 func main() {
 	trainingLoader, testLoader := loading.NewMNISTLoaders()
 	network := networks.NewFeedForwardNetwork(
-		5,
+		1,
 		32,
 		0.01,
 		trainingLoader,
@@ -28,5 +28,9 @@ func main() {
 	)
 	start := time.Now()
 	network.Train()
-	fmt.Printf("elapsed time: %s\n", time.Since(start))
+	fmt.Printf("training elapsed time: %s\n", time.Since(start))
+	start = time.Now()
+	report := network.Test()
+	fmt.Printf("test elapsed time: %s\n", time.Since(start))
+	fmt.Println(report)
 }
