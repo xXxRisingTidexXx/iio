@@ -2,7 +2,7 @@ package costs_test
 
 import (
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"iio/pkg/costs"
 	"iio/pkg/test"
 )
@@ -11,9 +11,9 @@ var _ = Describe("mse", func() {
 	costFunction := costs.NewMSECostFunction()
 	Context("evaluation", func() {
 		test.With("should correctly calculate the final class among two equal ones", func() {
-			gomega.Expect(
+			Expect(
 				costFunction.Evaluate(test.Vector(0, 0.003, 0.027, 0.21, 0.308, 0.308, 0.0004, 0.00037)),
-			).To(gomega.Equal(4))
+			).To(Equal(4))
 		})
 	})
 	Context("differentiation", func() {
