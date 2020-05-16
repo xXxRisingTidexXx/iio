@@ -91,6 +91,10 @@ type FeedForwardNetwork struct {
 	estimator      estimate.Estimator
 }
 
+func (network *FeedForwardNetwork) Evaluate(input mat.Vector) int {
+	panic("implement me")
+}
+
 func (network *FeedForwardNetwork) Train() {
 	for epoch := 0; epoch < network.epochNumber; epoch++ {
 		network.trainingLoader.Shuffle()
@@ -171,8 +175,4 @@ func (network *FeedForwardNetwork) test(
 	}
 	resultChannel <- newResult(network.costFunction.Evaluate(activations), sample.Label)
 	waitGroup.Done()
-}
-
-func (network *FeedForwardNetwork) Evaluate(input mat.Vector) int {
-	panic("implement me")
 }
