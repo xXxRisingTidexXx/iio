@@ -97,18 +97,18 @@ func (network *FeedForwardNetwork) Train() {
 		for network.trainingLoader.Next() {
 			batch := network.trainingLoader.Batch(network.batchSize)
 			length := len(batch)
+			learningRate := -network.learningRate / float64(length)
 			deltasChannel := make(chan []*layered.Delta, length)
 			waitGroup := &sync.WaitGroup{}
 			waitGroup.Add(length)
 			for _, sample := range batch {
-				go network.train(sample, deltasChannel, waitGroup)
+				go network.train(sample, learningRate, deltasChannel, waitGroup)
 			}
 			waitGroup.Wait()
 			close(deltasChannel)
-			learningRate := -network.learningRate / float64(length)
 			for deltas := range deltasChannel {
 				for i, layer := range network.layers {
-					layer.Update(learningRate, deltas[i])
+					layer.Update(deltas[i])
 				}
 			}
 		}
@@ -117,6 +117,7 @@ func (network *FeedForwardNetwork) Train() {
 
 func (network *FeedForwardNetwork) train(
 	sample *loading.Sample,
+	learningRate float64,
 	deltasChannel chan<- []*layered.Delta,
 	waitGroup *sync.WaitGroup,
 ) {
@@ -130,7 +131,7 @@ func (network *FeedForwardNetwork) train(
 	diffs := network.costFunction.Differentiate(activations[length], sample.Label)
 	for i := length - 1; i >= 0; i-- {
 		nodes := network.layers[i].ProduceNodes(diffs, activations[i+1])
-		deltas[i] = layered.NewDelta(nodes, activations[i])
+		deltas[i] = layered.NewDelta(nodes, activations[i], learningRate)
 		if i > 0 {
 			diffs = network.layers[i].BackPropagate(nodes)
 		}
