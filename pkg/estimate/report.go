@@ -21,32 +21,32 @@ func (report *Report) Equal(other *Report) bool {
 
 func (report *Report) String() string {
 	builder := strings.Builder{}
-	builder.WriteString("           | precision | recall | f1-score | support \n")
-	builder.WriteString("-----------+-----------+--------+----------+---------\n")
+	builder.WriteString("           | support | precision | recall | f1-score \n")
+	builder.WriteString("-----------+---------+-----------+--------+----------\n")
 	for i, class := range report.Classes {
 		builder.WriteString(
 			fmt.Sprintf(
-				" class %3d | %9.3f | %6.3f | %8.3f | %7d \n",
+				" class %3d | %7d | %9.3f | %6.3f | %8.3f \n",
 				i,
+				class.Support,
 				class.Precision,
 				class.Recall,
 				class.F1Score,
-				class.Support,
 			),
 		)
 	}
 	builder.WriteString(
 		fmt.Sprintf(
-			" macro avg | %9.3f | %6.3f | %8.3f | %7d \n",
+			" macro avg | %7d | %9.3f | %6.3f | %8.3f \n",
+			report.MacroAvg.Support,
 			report.MacroAvg.Precision,
 			report.MacroAvg.Recall,
 			report.MacroAvg.F1Score,
-			report.MacroAvg.Support,
 		),
 	)
 	builder.WriteString(
-		fmt.Sprintf(" accuracy  |           |        | %8.3f |         \n", report.Accuracy),
+		fmt.Sprintf(" accuracy  |         |           |        | %8.3f \n", report.Accuracy),
 	)
-	builder.WriteString("-----------+-----------+--------+----------+---------\n")
+	builder.WriteString("-----------+---------+-----------+--------+----------\n")
 	return builder.String()
 }
