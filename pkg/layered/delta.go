@@ -1,6 +1,7 @@
 package layered
 
 import (
+	"fmt"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -30,4 +31,8 @@ type Delta struct {
 
 func (delta *Delta) Equal(other *Delta) bool {
 	return other != nil && mat.Equal(delta.Weights, other.Weights) && mat.Equal(delta.Biases, other.Biases)
+}
+
+func (delta *Delta) String() string {
+	return fmt.Sprintf("{%v %v}", delta.Weights, delta.Biases)
 }
