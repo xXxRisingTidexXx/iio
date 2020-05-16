@@ -47,6 +47,10 @@ type MNISTLoader struct {
 	position      int
 }
 
+func (loader *MNISTLoader) Length() int {
+	return loader.length
+}
+
 func (loader *MNISTLoader) Shuffle() {
 	rand.Shuffle(
 		loader.length,
