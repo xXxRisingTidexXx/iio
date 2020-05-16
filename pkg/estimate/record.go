@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+func NewRecord(support int, precision, recall, f1Score float64) *Record {
+
+	return &Record{}
+}
+
 type Record struct {
 	Support   int
 	Precision float64

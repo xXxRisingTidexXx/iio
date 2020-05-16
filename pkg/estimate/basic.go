@@ -51,6 +51,9 @@ func (estimator *BasicEstimator) Estimate() *Report {
 		totalF1Score += f1Score
 		classes[i] = &Record{int(support), precision, recall, f1Score}
 	}
+	if totalSupport != 0 {
+		totalAccuracy /= totalSupport
+	}
 	return &Report{
 		classes,
 		&Record{
@@ -59,6 +62,6 @@ func (estimator *BasicEstimator) Estimate() *Report {
 			totalRecall / float64(estimator.classNumber),
 			totalF1Score / float64(estimator.classNumber),
 		},
-		totalAccuracy / totalSupport,
+		totalAccuracy,
 	}
 }
