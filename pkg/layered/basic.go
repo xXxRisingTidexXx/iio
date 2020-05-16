@@ -78,12 +78,6 @@ func (layer *BasicLayer) Update(learningRate float64, delta *Delta) {
 	if delta == nil {
 		panic("layers: basic layer got nil delta")
 	}
-	if delta.Nodes == nil {
-		panic("layers: basic layer got nil delta nodes")
-	}
-	if delta.Activations == nil {
-		panic("layers: basic layer got nil delta activations")
-	}
 	rows, columns := layer.weights.Dims()
 	for i := 0; i < rows; i++ {
 		for j := 0; j < columns; j++ {

@@ -14,7 +14,7 @@ import (
 func main() {
 	trainingLoader, testLoader := loading.NewMNISTLoaders()
 	network := networks.NewFeedForwardNetwork(
-		5,
+		1,
 		16,
 		0.01,
 		trainingLoader,
