@@ -16,20 +16,15 @@ var _ = Describe("basic", func() {
 		estimator.Track(1, 2)
 		test.Comply(
 			estimator.Estimate(),
-			&estimate.Report{
-				Classes: []*estimate.Record{
-					{1, 0.5, 1, 0.6666666666666666},
-					{1, 0, 0, 0},
-					{3, 1, 0.6666666666666666, 0.8},
+			estimate.NewReport(
+				[]*estimate.Record{
+					estimate.NewRecord(1, 0.5, 1, 0.6666666666666666),
+					estimate.NewRecord(1, 0, 0, 0),
+					estimate.NewRecord(3, 1, 0.6666666666666666, 0.8),
 				},
-				MacroAvg: &estimate.Record{
-					Support:   5,
-					Precision: 0.5,
-					Recall:    0.5555555555555555,
-					F1Score:   0.48888888888888893,
-				},
-				Accuracy: 0.6,
-			},
+				estimate.NewRecord(5, 0.5, 0.5555555555555555, 0.48888888888888893),
+				0.6,
+			),
 		)
 	})
 })

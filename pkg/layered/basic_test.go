@@ -92,10 +92,10 @@ var _ = Describe("basic", func() {
 			)
 			layer.Update(
 				-0.01,
-				&layered.Delta{
-					Nodes:       test.Vector(0.4502, 0.0000281, 0.92837),
-					Activations: test.Vector(0.30113, 0.000007, 0.01198, 0.28767, 0.88891),
-				},
+				layered.NewDelta(
+					test.Vector(0.4502, 0.0000281, 0.92837),
+					test.Vector(0.30113, 0.000007, 0.01198, 0.28767, 0.88891),
+				),
 			)
 			test.Comply(
 				layer,
