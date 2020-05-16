@@ -29,7 +29,7 @@ func (estimator *BasicEstimator) Track(actual, ideal int) {
 
 func (estimator *BasicEstimator) Estimate() *Report {
 	classes := make([]*Record, estimator.classNumber)
-	totalPrecision, totalRecall, totalF1Score, totalAccuracy, totalSupport := 0.0, 0.0, 0.0, 0.0, 0.0
+	totalAccuracy, totalSupport, totalPrecision, totalRecall, totalF1Score := 0.0, 0.0, 0.0, 0.0, 0.0
 	for i := 0; i < estimator.classNumber; i++ {
 		accuracy := estimator.confusionMatrix.At(i, i)
 		precision := 0.0
@@ -44,20 +44,20 @@ func (estimator *BasicEstimator) Estimate() *Report {
 		if precision != 0 && recall != 0 {
 			f1Score = 2 * precision * recall / (precision + recall)
 		}
+		totalAccuracy += accuracy
+		totalSupport += support
 		totalPrecision += precision
 		totalRecall += recall
 		totalF1Score += f1Score
-		totalAccuracy += accuracy
-		totalSupport += support
-		classes[i] = &Record{precision, recall, f1Score, int(support)}
+		classes[i] = &Record{int(support), precision, recall, f1Score}
 	}
 	return &Report{
 		classes,
 		&Record{
+			int(totalSupport),
 			totalPrecision / float64(estimator.classNumber),
 			totalRecall / float64(estimator.classNumber),
 			totalF1Score / float64(estimator.classNumber),
-			int(totalSupport),
 		},
 		totalAccuracy / totalSupport,
 	}

@@ -18,15 +18,15 @@ var _ = Describe("basic", func() {
 			estimator.Estimate(),
 			&estimate.Report{
 				Classes: []*estimate.Record{
-					{0.5, 1, 0.6666666666666666, 1},
-					{0, 0, 0, 1},
-					{1, 0.6666666666666666, 0.8, 3},
+					{1, 0.5, 1, 0.6666666666666666},
+					{1, 0, 0, 0},
+					{3, 1, 0.6666666666666666, 0.8},
 				},
 				MacroAvg: &estimate.Record{
+					Support:   5,
 					Precision: 0.5,
 					Recall:    0.5555555555555555,
 					F1Score:   0.48888888888888893,
-					Support:   5,
 				},
 				Accuracy: 0.6,
 			},
