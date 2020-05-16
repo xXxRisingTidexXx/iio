@@ -25,16 +25,32 @@ func (costFunction *MSECostFunction) Evaluate(actual mat.Vector) int {
 	return index
 }
 
-func (costFunction *MSECostFunction) Differentiate(actual mat.Vector, label int) mat.Vector {
+func (costFunction *MSECostFunction) Cost(actual mat.Vector, label int) float64 {
+	costFunction.checkInput(actual, label)
+	cost := 0.0
+	for i := 0; i < actual.Len(); i++ {
+		value := actual.AtVec(i)
+		if i == label {
+			value = 1.0 - value
+		}
+		cost += value * value
+	}
+	return cost
+}
+
+func (costFunction *MSECostFunction) checkInput(actual mat.Vector, label int) {
 	if actual == nil {
 		panic("costs: mse cost function got nil actual")
 	}
-	length := actual.Len()
-	if label < 0 || label >= length {
+	if label < 0 || label >= actual.Len() {
 		panic(fmt.Sprintf("costs: mse cost function got invalid label, %d", label))
 	}
-	costs := mat.NewVecDense(length, nil)
-	costs.SetVec(label, 1)
-	costs.SubVec(actual, costs)
-	return costs
+}
+
+func (costFunction *MSECostFunction) Differentiate(actual mat.Vector, label int) mat.Vector {
+	costFunction.checkInput(actual, label)
+	diffs := mat.NewVecDense(actual.Len(), nil)
+	diffs.SetVec(label, 1)
+	diffs.SubVec(actual, diffs)
+	return diffs
 }
