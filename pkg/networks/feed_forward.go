@@ -168,7 +168,7 @@ func (network *FeedForwardNetwork) test(
 	for _, layer := range network.layers {
 		activations = layer.FeedForward(activations)
 	}
-	resultChannel <- &result{network.costFunction.Evaluate(activations), sample.Label}
+	resultChannel <- newResult(network.costFunction.Evaluate(activations), sample.Label)
 	waitGroup.Done()
 }
 
