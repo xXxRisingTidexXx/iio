@@ -74,19 +74,10 @@ func (layer *BasicLayer) BackPropagate(nodes mat.Vector) mat.Vector {
 	return diffs
 }
 
-func (layer *BasicLayer) Update(learningRate float64, delta *Delta) {
+func (layer *BasicLayer) Update(delta *Delta) {
 	if delta == nil {
 		panic("layers: basic layer got nil delta")
 	}
-	rows, columns := layer.weights.Dims()
-	for i := 0; i < rows; i++ {
-		for j := 0; j < columns; j++ {
-			layer.weights.Set(
-				i,
-				j,
-				layer.weights.At(i, j)+learningRate*delta.Nodes.AtVec(i)*delta.Activations.AtVec(j),
-			)
-		}
-	}
-	layer.biases.AddScaledVec(layer.biases, learningRate, delta.Nodes)
+	layer.weights.Add(layer.weights, delta.Weights)
+	layer.biases.AddVec(layer.biases, delta.Biases)
 }
