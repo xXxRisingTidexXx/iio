@@ -3,16 +3,21 @@ package estimate
 import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
+	"sync"
 )
 
 func NewBasicEstimator(classNumber int) *BasicEstimator {
 	if classNumber <= 1 {
 		panic(fmt.Sprintf("reports: got invalid class number, %d", classNumber))
 	}
-	return &BasicEstimator{classNumber, mat.NewDense(classNumber, classNumber, nil)}
+	return &BasicEstimator{
+		classNumber:     classNumber,
+		confusionMatrix: mat.NewDense(classNumber, classNumber, nil),
+	}
 }
 
 type BasicEstimator struct {
+	sync.Mutex
 	classNumber     int
 	confusionMatrix *mat.Dense
 }
@@ -24,7 +29,9 @@ func (estimator *BasicEstimator) Track(actual, ideal int) {
 	if ideal < 0 || ideal >= estimator.classNumber {
 		panic(fmt.Sprintf("reports: invalid ideal label, %d", ideal))
 	}
+	estimator.Lock()
 	estimator.confusionMatrix.Set(actual, ideal, estimator.confusionMatrix.At(actual, ideal)+1)
+	estimator.Unlock()
 }
 
 func (estimator *BasicEstimator) Estimate() *Report {
@@ -58,9 +65,9 @@ func (estimator *BasicEstimator) Estimate() *Report {
 		classes,
 		NewRecord(
 			int(totalSupport),
-			totalPrecision / float64(estimator.classNumber),
-			totalRecall / float64(estimator.classNumber),
-			totalF1Score / float64(estimator.classNumber),
+			totalPrecision/float64(estimator.classNumber),
+			totalRecall/float64(estimator.classNumber),
+			totalF1Score/float64(estimator.classNumber),
 		),
 		totalAccuracy,
 	)

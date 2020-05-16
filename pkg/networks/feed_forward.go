@@ -149,30 +149,21 @@ func (network *FeedForwardNetwork) Test() *estimate.Report {
 	for network.testLoader.Next() {
 		batch := network.testLoader.Batch(network.batchSize)
 		length := len(batch)
-		resultChannel := make(chan *result, length)
 		waitGroup := &sync.WaitGroup{}
 		waitGroup.Add(length)
 		for _, sample := range batch {
-			go network.test(sample, resultChannel, waitGroup)
+			go network.test(sample, waitGroup)
 		}
 		waitGroup.Wait()
-		close(resultChannel)
-		for result := range resultChannel {
-			network.estimator.Track(result.actual, result.ideal)
-		}
 	}
 	return network.estimator.Estimate()
 }
 
-func (network *FeedForwardNetwork) test(
-	sample *loading.Sample,
-	resultChannel chan<- *result,
-	waitGroup *sync.WaitGroup,
-) {
+func (network *FeedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.WaitGroup) {
 	activations := sample.Data
 	for _, layer := range network.layers {
 		activations = layer.FeedForward(activations)
 	}
-	resultChannel <- newResult(network.costFunction.Evaluate(activations), sample.Label)
+	network.estimator.Track(network.costFunction.Evaluate(activations), sample.Label)
 	waitGroup.Done()
 }
