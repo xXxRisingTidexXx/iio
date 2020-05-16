@@ -6,6 +6,24 @@ import (
 	"strings"
 )
 
+func NewReport(classes []*Record, macroAvg *Record, accuracy float64) *Report {
+	if classes == nil {
+		panic("estimate: report got nil classes")
+	}
+	for i, class := range classes {
+		if class == nil {
+			panic(fmt.Sprintf("estimate: report got nil class at %d", i))
+		}
+	}
+	if macroAvg == nil {
+		panic("estimate: report got nil macro avg")
+	}
+	if accuracy < 0 || accuracy > 1 {
+		panic(fmt.Sprintf("estimate: report got invalid accuracy, %.3f", accuracy))
+	}
+	return &Report{classes, macroAvg, accuracy}
+}
+
 type Report struct {
 	Classes  []*Record
 	MacroAvg *Record

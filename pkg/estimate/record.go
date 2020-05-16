@@ -5,8 +5,19 @@ import (
 )
 
 func NewRecord(support int, precision, recall, f1Score float64) *Record {
-
-	return &Record{}
+	if support < 0 {
+		panic(fmt.Sprintf("estimate: record got invalid support, %d", support))
+	}
+	if precision < 0 || precision > 1 {
+		panic(fmt.Sprintf("estimate: record got invalid precision, %.3f", precision))
+	}
+	if recall < 0 || recall > 1 {
+		panic(fmt.Sprintf("estimate: record got invalid recall, %.3f", recall))
+	}
+	if f1Score < 0 || f1Score > 1 {
+		panic(fmt.Sprintf("estimate: record got invalid f1-score, %.3f", f1Score))
+	}
+	return &Record{support, precision, recall, f1Score}
 }
 
 type Record struct {
