@@ -32,8 +32,14 @@ func NewFeedForwardNetwork(
 	if trainingLoader == nil {
 		panic("networks: feed forward network training loader can't be nil")
 	}
+	if length := trainingLoader.Length(); length < 1 {
+		panic(fmt.Sprintf("networks: feed forward network training set has invalid length, %d", length))
+	}
 	if testLoader == nil {
 		panic("networks: feed forward network test loader can't be nil")
+	}
+	if length := testLoader.Length(); length < 1 {
+		panic(fmt.Sprintf("networks: feed forward network test set has invalid length, %d", length))
 	}
 	if weightInitializer == nil {
 		panic("networks: feed forward network weight initializer can't be nil")
