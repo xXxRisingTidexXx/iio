@@ -9,7 +9,7 @@ import (
 	"runtime"
 )
 
-func NewMNISTLoaders() (*MNISTLoader, *MNISTLoader) {
+func NewMNISTLoaders() (Loader, Loader) {
 	_, filePath, _, ok := runtime.Caller(0)
 	if !ok {
 		panic("loading: root dir wasn't instantiated")
@@ -27,15 +27,15 @@ func NewMNISTLoaders() (*MNISTLoader, *MNISTLoader) {
 		)
 }
 
-func newMNISTLoader(imageFilePath, labelFilePath string, length int) *MNISTLoader {
+func newMNISTLoader(imageFilePath, labelFilePath string, length int) *mnistLoader {
 	indices := make([]int, length)
 	for i := 0; i < length; i++ {
 		indices[i] = i
 	}
-	return &MNISTLoader{imageFilePath, 16, 28 * 28, labelFilePath, 8, 1, length, indices, 0}
+	return &mnistLoader{imageFilePath, 16, 28 * 28, labelFilePath, 8, 1, length, indices, 0}
 }
 
-type MNISTLoader struct {
+type mnistLoader struct {
 	imageFilePath string
 	imageShift    int
 	imageExtent   int
@@ -47,11 +47,11 @@ type MNISTLoader struct {
 	position      int
 }
 
-func (loader *MNISTLoader) Length() int {
+func (loader *mnistLoader) Length() int {
 	return loader.length
 }
 
-func (loader *MNISTLoader) Shuffle() {
+func (loader *mnistLoader) Shuffle() {
 	rand.Shuffle(
 		loader.length,
 		func(i, j int) {
@@ -60,7 +60,7 @@ func (loader *MNISTLoader) Shuffle() {
 	)
 }
 
-func (loader *MNISTLoader) Next() bool {
+func (loader *mnistLoader) Next() bool {
 	isAvailable := loader.position < loader.length
 	if !isAvailable {
 		loader.position = 0
@@ -68,7 +68,7 @@ func (loader *MNISTLoader) Next() bool {
 	return isAvailable
 }
 
-func (loader *MNISTLoader) Batch(size int) []*Sample {
+func (loader *mnistLoader) Batch(size int) []*Sample {
 	if size < 1 {
 		panic(fmt.Sprintf("loading: mnist got too low batch size %d", size))
 	}
@@ -100,7 +100,7 @@ func (loader *MNISTLoader) Batch(size int) []*Sample {
 	return batch
 }
 
-func (loader *MNISTLoader) readIDX(size int) ([][]byte, [][]byte) {
+func (loader *mnistLoader) readIDX(size int) ([][]byte, [][]byte) {
 	indices := loader.indices[loader.position : loader.position+size]
 	images, labels := make([][]byte, size), make([][]byte, size)
 	imagesFile, err := os.Open(loader.imageFilePath)
