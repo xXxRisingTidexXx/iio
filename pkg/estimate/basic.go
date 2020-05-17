@@ -6,23 +6,23 @@ import (
 	"sync"
 )
 
-func NewBasicEstimator(classNumber int) *BasicEstimator {
+func NewBasicEstimator(classNumber int) Estimator {
 	if classNumber <= 1 {
 		panic(fmt.Sprintf("reports: got invalid class number, %d", classNumber))
 	}
-	return &BasicEstimator{
+	return &basicEstimator{
 		classNumber:     classNumber,
 		confusionMatrix: mat.NewDense(classNumber, classNumber, nil),
 	}
 }
 
-type BasicEstimator struct {
+type basicEstimator struct {
 	sync.Mutex
 	classNumber     int
 	confusionMatrix *mat.Dense
 }
 
-func (estimator *BasicEstimator) Track(actual, ideal int) {
+func (estimator *basicEstimator) Track(actual, ideal int) {
 	if actual < 0 || actual >= estimator.classNumber {
 		panic(fmt.Sprintf("reports: invalid actual label, %d", actual))
 	}
@@ -34,7 +34,7 @@ func (estimator *BasicEstimator) Track(actual, ideal int) {
 	estimator.Unlock()
 }
 
-func (estimator *BasicEstimator) Estimate() *Report {
+func (estimator *basicEstimator) Estimate() *Report {
 	classes := make([]*Record, estimator.classNumber)
 	totalAccuracy, totalSupport, totalPrecision, totalRecall, totalF1Score := 0.0, 0.0, 0.0, 0.0, 0.0
 	for i := 0; i < estimator.classNumber; i++ {
