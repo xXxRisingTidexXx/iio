@@ -7,7 +7,6 @@ import (
 	"iio/pkg/layered"
 	"iio/pkg/loading"
 	"iio/pkg/networks"
-	"iio/pkg/neurons"
 	"time"
 )
 
@@ -23,8 +22,8 @@ func main() {
 		initial.NewZeroInitializer(),
 		costs.NewMSECostFunction(),
 		layered.NewInputSchema(784),
-		layered.NewSchema(neurons.NewSigmoidNeuron(), 30),
-		layered.NewSchema(neurons.NewSigmoidNeuron(), 10),
+		layered.NewSigmoidSchema(30),
+		layered.NewSigmoidSchema(10),
 	)
 	start := time.Now()
 	network.Train()
