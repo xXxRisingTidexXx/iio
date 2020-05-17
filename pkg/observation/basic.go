@@ -22,7 +22,7 @@ func NewBasicObserver(epochNumber, setLength, portionSize int) *BasicObserver {
 	} else {
 		lastPortionSize = portionSize
 	}
-	length := epochNumber*epochBucketNumber
+	length := epochNumber * epochBucketNumber
 	return &BasicObserver{
 		buckets:           mat.NewVecDense(length, nil),
 		length:            length,
