@@ -8,7 +8,7 @@ import (
 	"iio/pkg/initial"
 	"iio/pkg/layered"
 	"iio/pkg/loading"
-	"iio/pkg/observe"
+	"iio/pkg/observations"
 	"sync"
 )
 
@@ -83,7 +83,7 @@ func NewFeedForwardNetwork(
 		testLoader,
 		layers,
 		costFunction,
-		observe.NewBasicObserver(epochNumber, trainingLoader.Length(), batchSize),
+		observations.NewBasicObserver(epochNumber, trainingLoader.Length(), batchSize),
 		estimate.NewBasicEstimator(schemas[length].Size),
 	}
 }
@@ -96,7 +96,7 @@ type FeedForwardNetwork struct {
 	testLoader     loading.Loader
 	layers         []layered.Layer
 	costFunction   costs.CostFunction
-	observer       observe.Observer
+	observer       observations.Observer
 	estimator      estimate.Estimator
 }
 

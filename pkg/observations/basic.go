@@ -1,4 +1,4 @@
-package observe
+package observations
 
 import (
 	"fmt"
@@ -65,5 +65,5 @@ func (observer *BasicObserver) Observe(cost float64) {
 }
 
 func (observer *BasicObserver) Expound() mat.Matrix {
-	return mat.NewDense(1, 1, nil)
+	return observer.buckets
 }

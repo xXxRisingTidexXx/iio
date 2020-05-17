@@ -1,4 +1,4 @@
-package observe
+package observations
 
 import (
 	"gonum.org/v1/gonum/mat"
