@@ -5,17 +5,17 @@ import (
 	"math"
 )
 
-func NewSigmoidNeuron() *SigmoidNeuron {
-	return &SigmoidNeuron{}
+func NewSigmoidNeuron() Neuron {
+	return &sigmoidNeuron{}
 }
 
-type SigmoidNeuron struct{}
+type sigmoidNeuron struct{}
 
-func (neuron *SigmoidNeuron) String() string {
+func (neuron *sigmoidNeuron) String() string {
 	return "sigmoid"
 }
 
-func (neuron *SigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
+func (neuron *sigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
 	if input == nil {
 		panic("neurons: sigmoid neuron got nil input")
 	}
@@ -27,7 +27,7 @@ func (neuron *SigmoidNeuron) Evaluate(input mat.Vector) mat.Vector {
 	)
 }
 
-func (neuron *SigmoidNeuron) apply(vector mat.Vector, applier func(int, float64) float64) mat.Vector {
+func (neuron *sigmoidNeuron) apply(vector mat.Vector, applier func(int, float64) float64) mat.Vector {
 	length := vector.Len()
 	output := mat.NewVecDense(length, nil)
 	for i := 0; i < length; i++ {
@@ -36,7 +36,7 @@ func (neuron *SigmoidNeuron) apply(vector mat.Vector, applier func(int, float64)
 	return output
 }
 
-func (neuron *SigmoidNeuron) Differentiate(output mat.Vector) mat.Vector {
+func (neuron *sigmoidNeuron) Differentiate(output mat.Vector) mat.Vector {
 	if output == nil {
 		panic("neurons: sigmoid neuron got nil output")
 	}
