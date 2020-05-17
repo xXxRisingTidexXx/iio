@@ -16,31 +16,31 @@ func NewBasicObserver(epochNumber, setLength, portionSize int) *BasicObserver {
 	if portionSize < 1 {
 		panic(fmt.Sprintf("observer: basic observer got invalid portion size, %d", portionSize))
 	}
-	epochBucketNumber, lastPortionSize := setLength/portionSize, setLength%portionSize
+	bucketNumber, lastPortionSize := setLength/portionSize, setLength%portionSize
 	if lastPortionSize != 0 {
-		epochBucketNumber++
+		bucketNumber++
 	} else {
 		lastPortionSize = portionSize
 	}
-	length := epochNumber * epochBucketNumber
+	length := epochNumber * bucketNumber
 	return &BasicObserver{
-		buckets:           mat.NewVecDense(length, nil),
-		length:            length,
-		epochBucketNumber: epochBucketNumber,
-		portionSize:       portionSize,
-		lastPortionSize:   lastPortionSize,
+		buckets:         mat.NewVecDense(length, nil),
+		length:          length,
+		bucketNumber:    bucketNumber,
+		portionSize:     portionSize,
+		lastPortionSize: lastPortionSize,
 	}
 }
 
 type BasicObserver struct {
 	sync.Mutex
-	buckets           *mat.VecDense
-	length            int
-	epochBucketNumber int
-	portionSize       int
-	lastPortionSize   int
-	bucketIndex       int
-	observationIndex  int
+	buckets          *mat.VecDense
+	length           int
+	bucketNumber     int
+	portionSize      int
+	lastPortionSize  int
+	bucketIndex      int
+	observationIndex int
 }
 
 func (observer *BasicObserver) Observe(cost float64) {
@@ -52,7 +52,7 @@ func (observer *BasicObserver) Observe(cost float64) {
 	observer.observationIndex++
 	value := observer.buckets.AtVec(bucketIndex) + cost
 	portionSize := observer.portionSize
-	if (bucketIndex+1)%observer.epochBucketNumber == 0 {
+	if (bucketIndex+1)%observer.bucketNumber == 0 {
 		portionSize = observer.lastPortionSize
 	}
 	if observer.observationIndex == portionSize {
@@ -65,5 +65,12 @@ func (observer *BasicObserver) Observe(cost float64) {
 }
 
 func (observer *BasicObserver) Expound() mat.Matrix {
-	return observer.buckets
+	observations := mat.NewDense(observer.length+1, 2, nil)
+	observations.Set(0, 0, 0)
+	observations.Set(0, 1, 0)
+	for i := 1; i <= observer.length; i++ {
+		observations.Set(i, 0, float64(i)/float64(observer.bucketNumber))
+		observations.Set(i, 1, observer.buckets.AtVec(i-1))
+	}
+	return observations
 }
