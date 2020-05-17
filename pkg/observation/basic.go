@@ -1,33 +1,24 @@
 package observation
 
 import (
-	"fmt"
 	"gonum.org/v1/gonum/mat"
 	"sync"
 )
 
-func NewBasicObserver(epochNumber, setLength, portionSize int) Observer {
-	if epochNumber < 1 {
-		panic(fmt.Sprintf("observer: basic observer got invalid epoch number, %d", epochNumber))
-	}
-	if setLength < 1 {
-		panic(fmt.Sprintf("observer: basic observer got invalid set length, %d", setLength))
-	}
-	if portionSize < 1 {
-		panic(fmt.Sprintf("observer: basic observer got invalid portion size, %d", portionSize))
-	}
-	bucketNumber, lastPortionSize := setLength/portionSize, setLength%portionSize
+func NewBasicObserver(options *Options) Observer {
+	bucketNumber := options.SetLength/options.PortionSize
+	lastPortionSize := options.SetLength%options.PortionSize
 	if lastPortionSize != 0 {
 		bucketNumber++
 	} else {
-		lastPortionSize = portionSize
+		lastPortionSize = options.PortionSize
 	}
-	length := epochNumber * bucketNumber
+	length := options.EpochNumber * bucketNumber
 	return &basicObserver{
 		buckets:         mat.NewVecDense(length, nil),
 		length:          length,
 		bucketNumber:    bucketNumber,
-		portionSize:     portionSize,
+		portionSize:     options.PortionSize,
 		lastPortionSize: lastPortionSize,
 	}
 }

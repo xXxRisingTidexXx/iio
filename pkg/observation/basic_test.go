@@ -17,7 +17,7 @@ var _ = Describe("basic", func() {
 	}
 	test.With("should correctly collect all costs and produce a series", func() {
 		rand.Seed(time.Now().UnixNano())
-		observer := observation.NewBasicObserver(2, 10, 3)
+		observer := observation.NewBasicObserver(observation.NewOptions(2, 10, 3))
 		costs := []float64{
 			0.94083628,
 			0.82872992,
