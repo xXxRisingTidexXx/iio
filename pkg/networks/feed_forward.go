@@ -137,7 +137,6 @@ func (network *FeedForwardNetwork) train(
 	for i, layer := range network.layers {
 		activations[i+1] = layer.FeedForward(activations[i])
 	}
-	network.observer.Observe(network.costFunction.Cost(activations[length], sample.Label))
 	deltas := make([]*layered.Delta, length)
 	diffs := network.costFunction.Differentiate(activations[length], sample.Label)
 	for i := length - 1; i >= 0; i-- {
@@ -147,6 +146,7 @@ func (network *FeedForwardNetwork) train(
 			diffs = network.layers[i].BackPropagate(nodes)
 		}
 	}
+	network.observer.Observe(network.costFunction.Cost(activations[length], sample.Label))
 	deltasChannel <- deltas
 	waitGroup.Done()
 }
