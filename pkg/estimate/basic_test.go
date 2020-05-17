@@ -4,16 +4,27 @@ import (
 	. "github.com/onsi/ginkgo"
 	"iio/pkg/estimate"
 	"iio/pkg/test"
+	"math/rand"
+	"sync"
+	"time"
 )
 
 var _ = Describe("basic", func() {
+	track := func(estimator estimate.Estimator, actual, ideal int, waitGroup *sync.WaitGroup) {
+		time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+		estimator.Track(actual, ideal)
+		waitGroup.Done()
+	}
 	test.With("should correctly track & estimate all predictions", func() {
+		rand.Seed(time.Now().UnixNano())
 		estimator := estimate.NewBasicEstimator(3)
-		estimator.Track(0, 0)
-		estimator.Track(0, 1)
-		estimator.Track(2, 2)
-		estimator.Track(2, 2)
-		estimator.Track(1, 2)
+		actuals, ideals := []int{0, 0, 2, 2, 1}, []int{0, 1, 2, 2, 2}
+		waitGroup := &sync.WaitGroup{}
+		waitGroup.Add(5)
+		for i := 0; i < 5; i++ {
+			go track(estimator, actuals[i], ideals[i], waitGroup)
+		}
+		waitGroup.Wait()
 		test.Comply(
 			estimator.Estimate(),
 			estimate.NewReport(
