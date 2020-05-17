@@ -18,7 +18,7 @@ var _ = Describe("basic", func() {
 	test.With("should correctly collect all costs and produce a series", func() {
 		rand.Seed(time.Now().UnixNano())
 		observer := observation.NewBasicObserver(2, 10, 3)
-		observations := []float64{
+		costs := []float64{
 			0.94083628,
 			0.82872992,
 			1.42810471,
@@ -46,16 +46,37 @@ var _ = Describe("basic", func() {
 			if i%4 == 3 {
 				offset = 1
 			}
-			costs := observations[start : start+offset]
-			waitGroup.Add(len(costs))
-			for _, cost := range costs {
+			batch := costs[start : start+offset]
+			waitGroup.Add(len(batch))
+			for _, cost := range batch {
 				go observe(observer, cost, waitGroup)
 			}
 			waitGroup.Wait()
 		}
 		test.Equate(
 			observer.Expound(),
-			test.Vector(1),
+			test.Matrix(
+				9,
+				2,
+				0,
+				0,
+				0.25,
+				1.0658903033333333,
+				0.5,
+				1.2039619733333333,
+				0.75,
+				0.8195047866666667,
+				1,
+				1.24980291,
+				1.25,
+				0.9067978666666666,
+				1.5,
+				0.75058531,
+				1.75,
+				1.14550197,
+				2,
+				0.63063128,
+			),
 		)
 	})
 })
