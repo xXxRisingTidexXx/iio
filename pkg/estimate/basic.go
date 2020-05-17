@@ -6,13 +6,10 @@ import (
 	"sync"
 )
 
-func NewBasicEstimator(classNumber int) Estimator {
-	if classNumber <= 1 {
-		panic(fmt.Sprintf("reports: got invalid class number, %d", classNumber))
-	}
+func NewBasicEstimator(options *Options) Estimator {
 	return &basicEstimator{
-		classNumber:     classNumber,
-		confusionMatrix: mat.NewDense(classNumber, classNumber, nil),
+		classNumber:     options.ClassNumber,
+		confusionMatrix: mat.NewDense(options.ClassNumber, options.ClassNumber, nil),
 	}
 }
 
@@ -24,10 +21,10 @@ type basicEstimator struct {
 
 func (estimator *basicEstimator) Track(actual, ideal int) {
 	if actual < 0 || actual >= estimator.classNumber {
-		panic(fmt.Sprintf("reports: invalid actual label, %d", actual))
+		panic(fmt.Sprintf("estimate: basic estimator invalid actual label, %d", actual))
 	}
 	if ideal < 0 || ideal >= estimator.classNumber {
-		panic(fmt.Sprintf("reports: invalid ideal label, %d", ideal))
+		panic(fmt.Sprintf("estimate: basic estimator got invalid ideal label, %d", ideal))
 	}
 	estimator.Lock()
 	estimator.confusionMatrix.Set(actual, ideal, estimator.confusionMatrix.At(actual, ideal)+1)

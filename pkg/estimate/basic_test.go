@@ -17,7 +17,7 @@ var _ = Describe("basic", func() {
 	}
 	test.With("should correctly track & estimate all predictions", func() {
 		rand.Seed(time.Now().UnixNano())
-		estimator := estimate.NewBasicEstimator(3)
+		estimator := estimate.NewBasicEstimator(estimate.NewOptions(3))
 		actuals, ideals := []int{0, 0, 2, 2, 1}, []int{0, 1, 2, 2, 2}
 		waitGroup := &sync.WaitGroup{}
 		waitGroup.Add(5)
