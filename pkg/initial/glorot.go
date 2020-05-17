@@ -6,18 +6,18 @@ import (
 	"math/rand"
 )
 
-func NewGlorotInitializer() *GlorotInitializer {
-	return &GlorotInitializer{}
+func NewGlorotInitializer() Initializer {
+	return &glorotInitializer{}
 }
 
 // Glorot (Xavier) normal sigmoid initializer.
-type GlorotInitializer struct{}
+type glorotInitializer struct{}
 
-func (initializer *GlorotInitializer) String() string {
+func (initializer *glorotInitializer) String() string {
 	return "glorot"
 }
 
-func (initializer *GlorotInitializer) InitializeVector(length int) *mat.VecDense {
+func (initializer *glorotInitializer) InitializeVector(length int) *mat.VecDense {
 	vector := mat.NewVecDense(length, nil)
 	for i := 0; i < length; i++ {
 		vector.SetVec(i, rand.NormFloat64())
@@ -25,7 +25,7 @@ func (initializer *GlorotInitializer) InitializeVector(length int) *mat.VecDense
 	return vector
 }
 
-func (initializer *GlorotInitializer) InitializeMatrix(rows, columns int) *mat.Dense {
+func (initializer *glorotInitializer) InitializeMatrix(rows, columns int) *mat.Dense {
 	sigma := math.Sqrt(32 / float64(rows+columns))
 	matrix := mat.NewDense(rows, columns, nil)
 	for i := 0; i < rows; i++ {
