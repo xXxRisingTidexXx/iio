@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-func NewBasicObserver(epochNumber, setLength, portionSize int) *BasicObserver {
+func NewBasicObserver(epochNumber, setLength, portionSize int) Observer {
 	if epochNumber < 1 {
 		panic(fmt.Sprintf("observer: basic observer got invalid epoch number, %d", epochNumber))
 	}
@@ -23,7 +23,7 @@ func NewBasicObserver(epochNumber, setLength, portionSize int) *BasicObserver {
 		lastPortionSize = portionSize
 	}
 	length := epochNumber * bucketNumber
-	return &BasicObserver{
+	return &basicObserver{
 		buckets:         mat.NewVecDense(length, nil),
 		length:          length,
 		bucketNumber:    bucketNumber,
@@ -32,7 +32,7 @@ func NewBasicObserver(epochNumber, setLength, portionSize int) *BasicObserver {
 	}
 }
 
-type BasicObserver struct {
+type basicObserver struct {
 	sync.Mutex
 	buckets          *mat.VecDense
 	length           int
@@ -43,7 +43,7 @@ type BasicObserver struct {
 	observationIndex int
 }
 
-func (observer *BasicObserver) Observe(cost float64) {
+func (observer *basicObserver) Observe(cost float64) {
 	observer.Lock()
 	bucketIndex := observer.bucketIndex
 	if bucketIndex >= observer.length {
@@ -64,7 +64,7 @@ func (observer *BasicObserver) Observe(cost float64) {
 	observer.Unlock()
 }
 
-func (observer *BasicObserver) Expound() mat.Matrix {
+func (observer *basicObserver) Expound() mat.Matrix {
 	observations := mat.NewDense(observer.length+1, 2, nil)
 	observations.Set(0, 0, 0)
 	observations.Set(0, 1, 0)
