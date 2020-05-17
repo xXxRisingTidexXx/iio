@@ -7,7 +7,7 @@ import (
 	"iio/pkg/neurons"
 )
 
-func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDense) *BasicLayer {
+func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDense) Layer {
 	if neuron == nil {
 		panic("layers: basic layer neuron can't be nil")
 	}
@@ -21,27 +21,27 @@ func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDen
 	if length := biases.Len(); rows != length {
 		panic(fmt.Sprintf("layers: basic layer matrix row numbers must equal, got %d & %d", rows, length))
 	}
-	return &BasicLayer{neuron, weights, biases}
+	return &basicLayer{neuron, weights, biases}
 }
 
-type BasicLayer struct {
+type basicLayer struct {
 	neuron  neurons.Neuron
 	weights *mat.Dense
 	biases  *mat.VecDense
 }
 
-func (layer *BasicLayer) Equal(other *BasicLayer) bool {
+func (layer *basicLayer) Equal(other *basicLayer) bool {
 	return other != nil &&
 		cmp.Equal(layer.neuron, other.neuron) &&
 		mat.Equal(layer.weights, other.weights) &&
 		mat.Equal(layer.biases, other.biases)
 }
 
-func (layer *BasicLayer) String() string {
+func (layer *basicLayer) String() string {
 	return fmt.Sprintf("{%s %v %v}", layer.neuron, layer.weights, layer.biases)
 }
 
-func (layer *BasicLayer) FeedForward(activations mat.Vector) mat.Vector {
+func (layer *basicLayer) FeedForward(activations mat.Vector) mat.Vector {
 	if activations == nil {
 		panic("layers: basic layer got nil activations")
 	}
@@ -52,7 +52,7 @@ func (layer *BasicLayer) FeedForward(activations mat.Vector) mat.Vector {
 	return layer.neuron.Evaluate(input)
 }
 
-func (layer *BasicLayer) ProduceNodes(diffs, activations mat.Vector) mat.Vector {
+func (layer *basicLayer) ProduceNodes(diffs, activations mat.Vector) mat.Vector {
 	if diffs == nil {
 		panic("layers: basic layer got nil diffs")
 	}
@@ -64,7 +64,7 @@ func (layer *BasicLayer) ProduceNodes(diffs, activations mat.Vector) mat.Vector 
 	return nodes
 }
 
-func (layer *BasicLayer) BackPropagate(nodes mat.Vector) mat.Vector {
+func (layer *basicLayer) BackPropagate(nodes mat.Vector) mat.Vector {
 	if nodes == nil {
 		panic("layers: basic layer got nil nodes")
 	}
@@ -74,7 +74,7 @@ func (layer *BasicLayer) BackPropagate(nodes mat.Vector) mat.Vector {
 	return diffs
 }
 
-func (layer *BasicLayer) Update(delta *Delta) {
+func (layer *basicLayer) Update(delta *Delta) {
 	if delta == nil {
 		panic("layers: basic layer got nil delta")
 	}
