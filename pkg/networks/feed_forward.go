@@ -22,7 +22,7 @@ func NewFeedForwardNetwork(
 	biasInitializer initial.Initializer,
 	costFunction costs.CostFunction,
 	schemas ...*layered.Schema,
-) *FeedForwardNetwork {
+) Network {
 	if epochNumber < 1 {
 		panic(fmt.Sprintf("networks: invalid epoch number, %d", epochNumber))
 	}
@@ -75,7 +75,7 @@ func NewFeedForwardNetwork(
 			panic("networks: the first schema must be an input one")
 		}
 	}
-	return &FeedForwardNetwork{
+	return &feedForwardNetwork{
 		epochNumber,
 		batchSize,
 		learningRate,
@@ -88,7 +88,7 @@ func NewFeedForwardNetwork(
 	}
 }
 
-type FeedForwardNetwork struct {
+type feedForwardNetwork struct {
 	epochNumber    int
 	batchSize      int
 	learningRate   float64
@@ -100,11 +100,11 @@ type FeedForwardNetwork struct {
 	estimator      estimate.Estimator
 }
 
-func (network *FeedForwardNetwork) Evaluate(input mat.Vector) int {
+func (network *feedForwardNetwork) Evaluate(input mat.Vector) int {
 	panic("implement me")
 }
 
-func (network *FeedForwardNetwork) Train() mat.Matrix {
+func (network *feedForwardNetwork) Train() mat.Matrix {
 	for epoch := 0; epoch < network.epochNumber; epoch++ {
 		network.trainingLoader.Shuffle()
 		for network.trainingLoader.Next() {
@@ -131,7 +131,7 @@ func (network *FeedForwardNetwork) Train() mat.Matrix {
 	return network.observer.Expound()
 }
 
-func (network *FeedForwardNetwork) train(
+func (network *feedForwardNetwork) train(
 	sample *loading.Sample,
 	learningRate float64,
 	deltasChannel chan<- []*layered.Delta,
@@ -157,12 +157,12 @@ func (network *FeedForwardNetwork) train(
 	waitGroup.Done()
 }
 
-func (network *FeedForwardNetwork) update(layer layered.Layer, delta *layered.Delta, waitGroup *sync.WaitGroup) {
+func (network *feedForwardNetwork) update(layer layered.Layer, delta *layered.Delta, waitGroup *sync.WaitGroup) {
 	layer.Update(delta)
 	waitGroup.Done()
 }
 
-func (network *FeedForwardNetwork) Test() *estimate.Report {
+func (network *feedForwardNetwork) Test() *estimate.Report {
 	network.testLoader.Shuffle()
 	for network.testLoader.Next() {
 		batch := network.testLoader.Batch(network.batchSize)
@@ -177,7 +177,7 @@ func (network *FeedForwardNetwork) Test() *estimate.Report {
 	return network.estimator.Estimate()
 }
 
-func (network *FeedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.WaitGroup) {
+func (network *feedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.WaitGroup) {
 	activations := sample.Data
 	for _, layer := range network.layers {
 		activations = layer.FeedForward(activations)
