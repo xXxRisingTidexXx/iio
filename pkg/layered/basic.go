@@ -7,21 +7,8 @@ import (
 	"iio/pkg/neurons"
 )
 
-func NewBasicLayer(neuron neurons.Neuron, weights *mat.Dense, biases *mat.VecDense) Layer {
-	if neuron == nil {
-		panic("layers: basic layer neuron can't be nil")
-	}
-	if weights == nil {
-		panic("layers: basic layer weights can't be nil")
-	}
-	if biases == nil {
-		panic("layers: basic layer biases can't be nil")
-	}
-	rows, _ := weights.Dims()
-	if length := biases.Len(); rows != length {
-		panic(fmt.Sprintf("layers: basic layer matrix row numbers must equal, got %d & %d", rows, length))
-	}
-	return &basicLayer{neuron, weights, biases}
+func NewBasicLayer(options *Options) Layer {
+	return &basicLayer{options.Neuron, options.Weights, options.Biases}
 }
 
 type basicLayer struct {
