@@ -8,6 +8,7 @@ import (
 	"iio/pkg/initial"
 	"iio/pkg/layered"
 	"iio/pkg/loading"
+	"iio/pkg/observe"
 	"sync"
 )
 
@@ -76,6 +77,7 @@ func NewFeedForwardNetwork(
 		testLoader,
 		layers,
 		costFunction,
+		observe.NewBasicObserver(epochNumber, trainingLoader.Length(), batchSize),
 		estimate.NewBasicEstimator(schemas[length].Size),
 	}
 }
@@ -88,6 +90,7 @@ type FeedForwardNetwork struct {
 	testLoader     loading.Loader
 	layers         []layered.Layer
 	costFunction   costs.CostFunction
+	observer       observe.Observer
 	estimator      estimate.Estimator
 }
 
@@ -95,7 +98,7 @@ func (network *FeedForwardNetwork) Evaluate(input mat.Vector) int {
 	panic("implement me")
 }
 
-func (network *FeedForwardNetwork) Train() {
+func (network *FeedForwardNetwork) Train() mat.Matrix {
 	for epoch := 0; epoch < network.epochNumber; epoch++ {
 		network.trainingLoader.Shuffle()
 		for network.trainingLoader.Next() {
@@ -117,6 +120,7 @@ func (network *FeedForwardNetwork) Train() {
 			}
 		}
 	}
+	return network.observer.Expound()
 }
 
 func (network *FeedForwardNetwork) train(
@@ -131,6 +135,7 @@ func (network *FeedForwardNetwork) train(
 	for i, layer := range network.layers {
 		activations[i+1] = layer.FeedForward(activations[i])
 	}
+	network.observer.Observe(network.costFunction.Cost(activations[length], sample.Label))
 	deltas := make([]*layered.Delta, length)
 	diffs := network.costFunction.Differentiate(activations[length], sample.Label)
 	for i := length - 1; i >= 0; i-- {

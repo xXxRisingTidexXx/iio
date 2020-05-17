@@ -7,6 +7,6 @@ import (
 
 type Network interface {
 	Evaluate(mat.Vector) int
-	Train()
+	Train() mat.Matrix
 	Test() *estimate.Report
 }
