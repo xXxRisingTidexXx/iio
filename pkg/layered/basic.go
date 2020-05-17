@@ -8,6 +8,9 @@ import (
 )
 
 func NewBasicLayer(options *Options) Layer {
+	if options == nil {
+		panic("layered: basic layer got nil options")
+	}
 	return &basicLayer{options.Neuron, options.Weights, options.Biases}
 }
 

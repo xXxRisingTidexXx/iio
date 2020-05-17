@@ -7,6 +7,9 @@ import (
 )
 
 func NewBasicEstimator(options *Options) Estimator {
+	if options == nil {
+		panic("estimate: basic estimator got nil options")
+	}
 	return &basicEstimator{
 		classNumber:     options.ClassNumber,
 		confusionMatrix: mat.NewDense(options.ClassNumber, options.ClassNumber, nil),

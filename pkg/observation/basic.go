@@ -6,8 +6,11 @@ import (
 )
 
 func NewBasicObserver(options *Options) Observer {
-	bucketNumber := options.SetLength/options.PortionSize
-	lastPortionSize := options.SetLength%options.PortionSize
+	if options == nil {
+		panic("observation: basic observer got nil options")
+	}
+	bucketNumber := options.SetLength / options.PortionSize
+	lastPortionSize := options.SetLength % options.PortionSize
 	if lastPortionSize != 0 {
 		bucketNumber++
 	} else {
