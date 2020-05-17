@@ -34,23 +34,9 @@ func Comply(a, b interface{}) {
 }
 
 func Vector(values ...float64) *mat.VecDense {
-	length := len(values)
-	if values == nil || length == 0 {
-		panic("test: vector can't be empty")
-	}
-	return mat.NewVecDense(length, values)
+	return mat.NewVecDense(len(values), values)
 }
 
 func Matrix(rows, columns int, values ...float64) *mat.Dense {
-	if rows <= 0 || columns <= 0 {
-		panic("test: matrix dimensions can't be non-positive")
-	}
-	length := len(values)
-	if values == nil || length == 0 {
-		panic("test: matrix can't be empty")
-	}
-	if rows*columns != length {
-		panic("test: matrix dimension inconsistency")
-	}
 	return mat.NewDense(rows, columns, values)
 }
