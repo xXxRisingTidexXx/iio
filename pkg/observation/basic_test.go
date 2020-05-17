@@ -11,7 +11,7 @@ import (
 
 var _ = Describe("basic", func() {
 	observe := func(observer observation.Observer, cost float64, waitGroup *sync.WaitGroup) {
-		time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+		time.Sleep(time.Millisecond * time.Duration(rand.Intn(20)))
 		observer.Observe(cost)
 		waitGroup.Done()
 	}

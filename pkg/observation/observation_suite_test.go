@@ -8,5 +8,5 @@ import (
 
 func TestObserve(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "observe suite")
+	RunSpecs(t, "observation suite")
 }
