@@ -5,13 +5,13 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-func NewMSECostFunction() *MSECostFunction {
-	return &MSECostFunction{}
+func NewMSECostFunction() CostFunction {
+	return &mseCostFunction{}
 }
 
-type MSECostFunction struct{}
+type mseCostFunction struct{}
 
-func (costFunction *MSECostFunction) Evaluate(actual mat.Vector) int {
+func (costFunction *mseCostFunction) Evaluate(actual mat.Vector) int {
 	if actual == nil {
 		panic("costs: mse cost function got nil actual")
 	}
@@ -25,7 +25,7 @@ func (costFunction *MSECostFunction) Evaluate(actual mat.Vector) int {
 	return index
 }
 
-func (costFunction *MSECostFunction) Cost(actual mat.Vector, label int) float64 {
+func (costFunction *mseCostFunction) Cost(actual mat.Vector, label int) float64 {
 	costFunction.checkInput(actual, label)
 	cost := 0.0
 	for i := 0; i < actual.Len(); i++ {
@@ -38,7 +38,7 @@ func (costFunction *MSECostFunction) Cost(actual mat.Vector, label int) float64 
 	return cost
 }
 
-func (costFunction *MSECostFunction) checkInput(actual mat.Vector, label int) {
+func (costFunction *mseCostFunction) checkInput(actual mat.Vector, label int) {
 	if actual == nil {
 		panic("costs: mse cost function got nil actual")
 	}
@@ -47,7 +47,7 @@ func (costFunction *MSECostFunction) checkInput(actual mat.Vector, label int) {
 	}
 }
 
-func (costFunction *MSECostFunction) Differentiate(actual mat.Vector, label int) mat.Vector {
+func (costFunction *mseCostFunction) Differentiate(actual mat.Vector, label int) mat.Vector {
 	costFunction.checkInput(actual, label)
 	diffs := mat.NewVecDense(actual.Len(), nil)
 	diffs.SetVec(label, 1)
