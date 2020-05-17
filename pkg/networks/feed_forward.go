@@ -114,9 +114,11 @@ func (network *FeedForwardNetwork) Train() mat.Matrix {
 			waitGroup.Wait()
 			close(deltasChannel)
 			for deltas := range deltasChannel {
+				waitGroup.Add(len(network.layers))
 				for i, layer := range network.layers {
-					layer.Update(deltas[i])
+					go network.update(layer, deltas[i], waitGroup)
 				}
+				waitGroup.Wait()
 			}
 		}
 	}
@@ -146,6 +148,11 @@ func (network *FeedForwardNetwork) train(
 		}
 	}
 	deltasChannel <- deltas
+	waitGroup.Done()
+}
+
+func (network *FeedForwardNetwork) update(layer layered.Layer, delta *layered.Delta, waitGroup *sync.WaitGroup) {
+	layer.Update(delta)
 	waitGroup.Done()
 }
 
