@@ -1,4 +1,4 @@
-package observations_test
+package observation_test
 
 import (
 	. "github.com/onsi/ginkgo"

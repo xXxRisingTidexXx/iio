@@ -1,4 +1,4 @@
-package observations
+package observation
 
 import (
 	"fmt"
