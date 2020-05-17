@@ -23,40 +23,7 @@ func NewFeedForwardNetwork(
 	costFunction costs.CostFunction,
 	schemas ...*layered.Schema,
 ) Network {
-	if epochNumber < 1 {
-		panic(fmt.Sprintf("networks: invalid epoch number, %d", epochNumber))
-	}
-	if batchSize < 1 {
-		panic(fmt.Sprintf("networks: invalid batch size, %d", batchSize))
-	}
-	if trainingLoader == nil {
-		panic("networks: feed forward network training loader can't be nil")
-	}
-	if length := trainingLoader.Length(); length < 1 {
-		panic(fmt.Sprintf("networks: feed forward network training set has invalid length, %d", length))
-	}
-	if testLoader == nil {
-		panic("networks: feed forward network test loader can't be nil")
-	}
-	if length := testLoader.Length(); length < 1 {
-		panic(fmt.Sprintf("networks: feed forward network test set has invalid length, %d", length))
-	}
-	if weightInitializer == nil {
-		panic("networks: feed forward network weight initializer can't be nil")
-	}
-	if biasInitializer == nil {
-		panic("networks: feed forward network bias initializer can't be nil")
-	}
-	if costFunction == nil {
-		panic("networks: feed forward network cost function can't be nil")
-	}
-	if schemas == nil {
-		panic("networks: feed forward network schemas can't be nil")
-	}
 	length := len(schemas) - 1
-	if length < 1 {
-		panic(fmt.Sprintf("networks: invalid schema number (%d) and at least 2 required", length+1))
-	}
 	layers := make([]layered.Layer, length)
 	for i, schema := range schemas {
 		if schema == nil {
