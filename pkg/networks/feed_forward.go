@@ -1,57 +1,39 @@
 package networks
 
 import (
-	"fmt"
 	"gonum.org/v1/gonum/mat"
 	"iio/pkg/costs"
 	"iio/pkg/estimate"
-	"iio/pkg/initial"
 	"iio/pkg/layered"
 	"iio/pkg/loading"
 	"iio/pkg/observation"
 	"sync"
 )
 
-func NewFeedForwardNetwork(
-	epochNumber int,
-	batchSize int,
-	learningRate float64,
-	trainingLoader loading.Loader,
-	testLoader loading.Loader,
-	weightInitializer initial.Initializer,
-	biasInitializer initial.Initializer,
-	costFunction costs.CostFunction,
-	schemas ...*layered.Schema,
-) Network {
-	length := len(schemas) - 1
-	layers := make([]layered.Layer, length)
-	for i, schema := range schemas {
-		if schema == nil {
-			panic(fmt.Sprintf("networks: nil schema at %d", i))
-		}
-		if i > 0 {
-			if schema.Neuron == nil {
-				panic(fmt.Sprintf("networks: input schema at %d", i))
-			}
-			layers[i-1] = layered.NewBasicLayer(
-				schema.Neuron,
-				weightInitializer.InitializeMatrix(schema.Size, schemas[i-1].Size),
-				biasInitializer.InitializeVector(schema.Size),
-			)
-		} else if schema.Neuron != nil {
-			panic("networks: the first schema must be an input one")
-		}
+func NewFeedForwardNetwork(options *Options) Network {
+	length := len(options.Schemas)
+	layers := make([]layered.Layer, length-1)
+	for i := 1; i < length; i++ {
+		layers[i-1] = layered.NewBasicLayer(
+			layered.NewOptions(
+				options.Schemas[i].Neuron,
+				options.WeightInitializer.InitializeMatrix(options.Schemas[i].Size, options.Schemas[i-1].Size),
+				options.BiasInitializer.InitializeVector(options.Schemas[i].Size),
+			),
+		)
 	}
 	return &feedForwardNetwork{
-		epochNumber,
-		batchSize,
-		learningRate,
-		trainingLoader,
-		testLoader,
+		options.EpochNumber,
+		options.BatchSize,
+		options.LearningRate,
+		options.TrainingLoader,
+		options.TestLoader,
 		layers,
-		costFunction,
-		observation.NewBasicObserver(epochNumber, trainingLoader.Length(), batchSize),
-		estimate.NewBasicEstimator(schemas[length].Size),
+		options.CostFunction,
+		observation.NewBasicObserver(
+			observation.NewOptions(options.EpochNumber, options.TrainingLoader.Length(), options.BatchSize),
+		),
+		estimate.NewBasicEstimator(estimate.NewOptions(options.Schemas[length].Size)),
 	}
 }
 
