@@ -11,6 +11,9 @@ import (
 )
 
 func NewFeedForwardNetwork(options *Options) Network {
+	if options == nil {
+		panic("networks: feed forward network got nil options")
+	}
 	length := len(options.Schemas)
 	layers := make([]layered.Layer, length-1)
 	for i := 1; i < length; i++ {
