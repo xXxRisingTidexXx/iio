@@ -58,7 +58,7 @@ func NewOptions(
 		}
 		if i > 0 && schema.Neuron == nil {
 			panic(fmt.Sprintf("networks: input schema at %d", i))
-		} else if schema.Neuron != nil {
+		} else if i == 0 && schema.Neuron != nil {
 			panic("networks: the first schema must be an input one")
 		}
 	}
