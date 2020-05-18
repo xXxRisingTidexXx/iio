@@ -53,7 +53,18 @@ type feedForwardNetwork struct {
 }
 
 func (network *feedForwardNetwork) Evaluate(input mat.Vector) int {
-	panic("implement me")
+	if input == nil {
+		panic("network: feed forward network got nil input")
+	}
+	return network.feedForward(input)
+}
+
+func (network *feedForwardNetwork) feedForward(input mat.Vector) int {
+	activations := input
+	for _, layer := range network.layers {
+		activations = layer.FeedForward(activations)
+	}
+	return network.costFunction.Evaluate(activations)
 }
 
 func (network *feedForwardNetwork) Train() mat.Matrix {
@@ -130,10 +141,6 @@ func (network *feedForwardNetwork) Test() *estimate.Report {
 }
 
 func (network *feedForwardNetwork) test(sample *loading.Sample, waitGroup *sync.WaitGroup) {
-	activations := sample.Data
-	for _, layer := range network.layers {
-		activations = layer.FeedForward(activations)
-	}
-	network.estimator.Track(network.costFunction.Evaluate(activations), sample.Label)
+	network.estimator.Track(network.feedForward(sample.Data), sample.Label)
 	waitGroup.Done()
 }
