@@ -17,7 +17,7 @@ commands:
     cmd: golangci-lint run
   unittest:
     description: Run just unit test cases
-    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -skipMeasurements -timeout 1m
+    cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -skipMeasurements -nodes 4 -timeout 1m
   fulltest:
     description: Run all test suites including benchmarks
     cmd: ginkgo -r --randomizeAllSpecs --randomizeSuites -nodes 4 -timeout 5m

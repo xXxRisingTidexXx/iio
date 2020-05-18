@@ -2,16 +2,36 @@ package main
 
 import (
 	"fmt"
+	"iio/pkg/costs"
+	"iio/pkg/initial"
+	"iio/pkg/layered"
 	"iio/pkg/loading"
-	"math/rand"
+	"iio/pkg/networks"
 	"time"
 )
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-	loader := loading.NewMNISTLoader()
-	trainingSamples, validationSamples, testSamples := loader.Load()
-	fmt.Printf("Training set length: %d\n", trainingSamples.Length())
-	fmt.Printf("Validation set length: %d\n", validationSamples.Length())
-	fmt.Printf("Test set length: %d\n", testSamples.Length())
+	trainingLoader, testLoader := loading.NewMNISTLoaders()
+	network := networks.NewFeedForwardNetwork(
+		networks.NewOptions(
+			5,
+			16,
+			0.01,
+			trainingLoader,
+			testLoader,
+			initial.NewGlorotInitializer(),
+			initial.NewZeroInitializer(),
+			costs.NewMSECostFunction(),
+			layered.NewInputSchema(784),
+			layered.NewSigmoidSchema(30),
+			layered.NewSigmoidSchema(10),
+		),
+	)
+	start := time.Now()
+	network.Train()
+	fmt.Printf("training elapsed time: %s\n", time.Since(start))
+	start = time.Now()
+	report := network.Test()
+	fmt.Printf("test elapsed time: %s\n\n", time.Since(start))
+	fmt.Println(report)
 }
