@@ -13,17 +13,19 @@ import (
 func main() {
 	trainingLoader, testLoader := loading.NewMNISTLoaders()
 	network := networks.NewFeedForwardNetwork(
-		5,
-		16,
-		0.01,
-		trainingLoader,
-		testLoader,
-		initial.NewGlorotInitializer(),
-		initial.NewZeroInitializer(),
-		costs.NewMSECostFunction(),
-		layered.NewInputSchema(784),
-		layered.NewSigmoidSchema(30),
-		layered.NewSigmoidSchema(10),
+		networks.NewOptions(
+			5,
+			16,
+			0.01,
+			trainingLoader,
+			testLoader,
+			initial.NewGlorotInitializer(),
+			initial.NewZeroInitializer(),
+			costs.NewMSECostFunction(),
+			layered.NewInputSchema(784),
+			layered.NewSigmoidSchema(30),
+			layered.NewSigmoidSchema(10),
+		),
 	)
 	start := time.Now()
 	network.Train()
