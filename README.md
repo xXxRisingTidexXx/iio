@@ -4,11 +4,8 @@ Actually, this module provides tools for *Perceptron*, *Feed-Forward Network* an
 architectures. Data loading interfaces implemented as well - you can use either out-of-box realization of
 [MNIST](http://yann.lecun.com/exdb/mnist/) handwritten digit database or write a custom data fetcher. A ready-to-use
 demo network can be found under [cmd/main.go](https://github.com/xXxRisingTidexXx/iio/blob/master/cmd/main.go).
-___
+
 ![alt costs](images/costs.png)
-___
-![alt metrics](images/metrics.png)   
-___
 
 ## Example
 ```go
