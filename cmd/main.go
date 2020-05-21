@@ -14,9 +14,9 @@ func main() {
 	trainingLoader, testLoader := loading.NewMNISTLoaders()
 	network := networks.NewFeedForwardNetwork(
 		networks.NewOptions(
-			5,
+			6,
 			16,
-			0.01,
+			0.9,
 			trainingLoader,
 			testLoader,
 			initial.NewGlorotInitializer(),
