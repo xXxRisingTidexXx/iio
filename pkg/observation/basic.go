@@ -59,12 +59,10 @@ func (observer *basicObserver) Observe(cost float64) {
 }
 
 func (observer *basicObserver) Expound() mat.Matrix {
-	observations := mat.NewDense(observer.length+1, 2, nil)
-	observations.Set(0, 0, 0)
-	observations.Set(0, 1, 0)
-	for i := 1; i <= observer.length; i++ {
-		observations.Set(i, 0, float64(i)/float64(observer.bucketNumber))
-		observations.Set(i, 1, observer.buckets.AtVec(i-1))
+	observations := mat.NewDense(observer.length, 2, nil)
+	for i := 0; i < observer.length; i++ {
+		observations.Set(i, 0, float64(i+1)/float64(observer.bucketNumber))
+		observations.Set(i, 1, observer.buckets.AtVec(i))
 	}
 	return observations
 }
