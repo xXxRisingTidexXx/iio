@@ -56,10 +56,8 @@ var _ = Describe("basic", func() {
 		test.Equate(
 			observer.Expound(),
 			test.Matrix(
-				9,
+				8,
 				2,
-				0,
-				0,
 				0.25,
 				1.0658903033333333,
 				0.5,
